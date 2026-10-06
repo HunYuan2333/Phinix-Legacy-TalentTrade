@@ -18,6 +18,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         private static readonly Queue<OutgoingProtocol> OutgoingQueue = new Queue<OutgoingProtocol>();
         private static readonly object IncomingLock = new object();
         private static readonly Queue<string> IncomingQueue = new Queue<string>();
+        private static int incomingCharacters;
         private static readonly object StateLock = new object();
 
         private static long lastSeenId;
@@ -46,6 +47,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             lock (IncomingLock)
             {
                 IncomingQueue.Clear();
+                incomingCharacters = 0;
             }
 
             lock (StateLock)
@@ -86,6 +88,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                 if (IncomingQueue.Count > 0)
                 {
                     protocolMessage = IncomingQueue.Dequeue();
+                    incomingCharacters -= protocolMessage.Length;
                     return true;
                 }
             }
@@ -149,13 +152,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         public static string Decompress(string b64Compressed)
         {
-            byte[] compressed = Convert.FromBase64String(b64Compressed);
-            using (MemoryStream ms = new MemoryStream(compressed))
-            using (GZipStream gz = new GZipStream(ms, CompressionMode.Decompress))
-            using (StreamReader reader = new StreamReader(gz, Encoding.UTF8))
-            {
-                return reader.ReadToEnd();
-            }
+            return TalentTradeInputLimits.Decompress(b64Compressed);
         }
 
         // --- Private ---
@@ -205,9 +202,8 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                 }
 
                 using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
                 {
-                    reader.ReadToEnd();
+                    TalentTradeInputLimits.ReadResponse(response.GetResponseStream(), response.ContentLength);
                 }
             }
             catch (Exception ex)
@@ -273,9 +269,8 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
                 string responseText;
                 using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                using (StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
                 {
-                    responseText = reader.ReadToEnd();
+                    responseText = TalentTradeInputLimits.ReadResponse(response.GetResponseStream(), response.ContentLength);
                 }
 
                 if (LegacyTalentTradeRuntime.Settings?.EnableDebugLog == true)
@@ -286,6 +281,8 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             }
             catch (Exception ex)
             {
+                if (ex is InvalidDataException || ex is DecoderFallbackException)
+                    LegacyTalentTradeRuntime.LogWarning("[TalentTrade] Relay input rejected: " + ex.GetType().Name + ".");
                 if (LegacyTalentTradeRuntime.Settings?.EnableDebugLog == true)
                 {
                     // §3.8：异常日志必须附带完整 Exception（含堆栈）
@@ -305,6 +302,8 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         private static void ParseRawResponse(string responseText)
         {
             if (string.IsNullOrEmpty(responseText)) return;
+            if (responseText.Length > TalentTradeInputLimits.MaxResponseBytes)
+                throw new InvalidDataException("TalentResponseLimit");
 
             string[] lines = responseText.Split(new[] { '\n' }, StringSplitOptions.None);
             if (lines.Length == 0) return;
@@ -317,12 +316,8 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
             long maxId = currentLastSeen;
 
-            string firstLine = lines[0].Trim();
-            long reportedLastId;
-            if (long.TryParse(firstLine, out reportedLastId))
-            {
-                maxId = Math.Max(maxId, reportedLastId);
-            }
+            // The relay's head is not a receipt for all events returned by this page.
+            // Advance only past accepted/rejected individual lines, never past a full queue.
 
             for (int i = 1; i < lines.Length; i++)
             {
@@ -343,23 +338,25 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                 string message;
                 try
                 {
-                    byte[] bytes = Convert.FromBase64String(b64);
-                    message = Encoding.UTF8.GetString(bytes);
+                    message = TalentTradeInputLimits.DecodeProtocol(b64);
                 }
                 catch (Exception)
                 {
-                    // §3.5：单条损坏报文跳过，不中断其余消息（解析边界隔离）
+                    maxId = Math.Max(maxId, idValue);
+                    LegacyTalentTradeRuntime.LogWarning("[TalentTrade] Protocol input rejected: invalid encoding or size.");
                     continue;
                 }
 
                 lock (IncomingLock)
                 {
-                    if (IncomingQueue.Count >= MaxIncomingQueue)
+                    if (IncomingQueue.Count >= MaxIncomingQueue ||
+                        message.Length > TalentTradeInputLimits.MaxQueuedCharacters - incomingCharacters)
                     {
-                        IncomingQueue.Dequeue();
-                        LegacyTalentTradeRuntime.LogWarning("【三角洲贸易】Relay incoming queue overflow, dropped oldest message.");
+                        LegacyTalentTradeRuntime.LogWarning("[TalentTrade] Incoming queue full; existing messages retained and cursor held.");
+                        break;
                     }
                     IncomingQueue.Enqueue(message);
+                    incomingCharacters += message.Length;
                 }
 
                 if (idValue > maxId) maxId = idValue;

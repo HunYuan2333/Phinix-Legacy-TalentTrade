@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using PhinixClient;
 using PhinixClient.Framework;
 using RimWorld;
@@ -58,7 +59,8 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         private static readonly Dictionary<string, string> OfflinePawnDataCache = new Dictionary<string, string>();
 
         // --- Purchase timeout tracking ---
-        private static readonly Dictionary<string, int> PendingPurchases = new Dictionary<string, int>();
+        private static readonly Dictionary<string, PendingMarketPurchase> PendingPurchases = new Dictionary<string, PendingMarketPurchase>();
+        private const int MaxPendingPurchases = 128;
         private const int PURCHASE_TIMEOUT_TICKS = 1800; // 30 seconds at 60 FPS
 
         // --- Listing expiry & heartbeat ---
@@ -531,9 +533,14 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         private static void ProcessProtocolMessage(string message)
         {
+            if (string.IsNullOrEmpty(message) || message.Length > TalentTradeInputLimits.MaxProtocolCharacters) return;
+            int fields = 1;
+            foreach (char character in message)
+                if (character == '|' && ++fields > 64) return;
             TalentTradeMessageType msgType;
             string[] parts;
             if (!TalentTradeProtocol.TryParse(message, out msgType, out parts)) return;
+            if (parts.Length > 3 && parts[3].Length > TalentTradeInputLimits.MaxIdCharacters) return;
 
             // Dedup（在 handler 之前登记：即使本条处理失败也不重试，与原行为一致）
             string dedupKey = BuildDedupKey(msgType, parts);
@@ -541,6 +548,11 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             {
                 lock (ProcessedLock)
                 {
+                    if (!ProcessedProtocolKeys.Contains(dedupKey) && ProcessedProtocolKeys.Count >= TalentTradeInputLimits.MaxProcessedKeys)
+                    {
+                        LegacyTalentTradeRuntime.LogWarning("[TalentTrade] Protocol dedup capacity reached; new event rejected.");
+                        return;
+                    }
                     if (!ProcessedProtocolKeys.Add(dedupKey)) return;
                 }
             }
@@ -637,7 +649,8 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         private static string BuildDedupKey(TalentTradeMessageType msgType, string[] parts)
         {
             // Don't dedup mlist (heartbeat needs to update LastRefreshUtc)
-            if (msgType == TalentTradeMessageType.MarketList)
+            if (msgType == TalentTradeMessageType.MarketList || msgType == TalentTradeMessageType.BlobPart ||
+                msgType == TalentTradeMessageType.MarketSell)
                 return null;
 
             // Use type + first ID field for dedup
@@ -849,6 +862,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             // Received by the BUYER — seller is sending us the pawn
             if (parts.Length < 7) return;
             string listingId = parts[3];
+            string sellerUuid = parts[4];
             string buyerUuid = parts[5];
             string b64PawnData = parts[6];
 
@@ -856,32 +870,62 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             if (string.IsNullOrEmpty(localUuid)) return;
             if (buyerUuid != localUuid) return;
 
-            // Remove from pending purchases
-            PendingPurchases.Remove(listingId);
-
-            // Remove listing from local view
-            lock (MarketLock)
+            PendingMarketPurchase purchase;
+            if (!PendingPurchases.TryGetValue(listingId, out purchase) ||
+                !purchase.Matches(sellerUuid, buyerUuid, activeSaveToken, Verse.Current.Game))
             {
-                MarketListings.Remove(listingId);
+                AuditPurchase("unexpected-delivery-rejected", listingId);
+                return;
             }
-
-            // Deserialize and spawn pawn on main thread
-            EnqueueMainThread(() =>
+            long retained = PendingPurchases.Values.Sum(p => (long)(p.Payload == null ? 0 : p.Payload.Length));
+            if (retained + (purchase.Payload == null ? b64PawnData.Length : 0) > TalentTradeInputLimits.MaxQueuedCharacters ||
+                !purchase.TryReceive(b64PawnData))
             {
-                Pawn pawn = PawnDeserializer.DeserializeAndSpawn(b64PawnData);
-                if (pawn != null)
+                AuditPurchase("delivery-state-or-limit-rejected", listingId);
+                return;
+            }
+            // Keep intent and raw payload until a real ownership outcome, not queue admission.
+            if (!TryEnqueueMainThread(() =>
+            {
+                PendingMarketPurchase current;
+                if (!LegacyTalentTradeRuntime.IsActive || !PendingPurchases.TryGetValue(listingId, out current) ||
+                    !ReferenceEquals(current, purchase) || !purchase.Matches(sellerUuid, GetLocalUuid(), activeSaveToken, Verse.Current.Game))
                 {
-                    Messages.Message(
-                        "Phinix_legacyTalentTrade_pawnReceivedMessage".Localize(pawn.LabelShortCap),
-                        new LookTargets(pawn),
-                        MessageTypeDefOf.PositiveEvent,
-                        false);
+                    purchase.Queued = false;
+                    AuditPurchase("stale-delivery-retained", listingId);
+                    return;
                 }
-                else
+                Pawn pawn = null;
+                PawnReturnOutcome outcome;
+                try { outcome = PawnDeserializer.RestorePendingPawn(purchase.Payload, purchase.BeginHandoff, out pawn); }
+                catch (Exception)
                 {
-                    LegacyTalentTradeRuntime.LogError("【三角洲贸易】HandleMarketSell: Failed to deserialize pawn for listing " + listingId);
+                    outcome = purchase.Uncertain ? PawnReturnOutcome.Uncertain : PawnReturnOutcome.Deferred;
                 }
-            });
+                purchase.Finish(outcome);
+                if (outcome == PawnReturnOutcome.Returned)
+                {
+                    PendingPurchases.Remove(listingId);
+                    lock (MarketLock) MarketListings.Remove(listingId);
+                    AuditPurchase("delivery-completed", listingId);
+                    try { Messages.Message("Phinix_legacyTalentTrade_pawnReceivedMessage".Localize(pawn.LabelShortCap),
+                        new LookTargets(pawn), MessageTypeDefOf.PositiveEvent, false); }
+                    catch (Exception) { AuditPurchase("delivery-notification-failed", listingId); }
+                }
+                else AuditPurchase(outcome == PawnReturnOutcome.Uncertain ? "delivery-uncertain-retained" : "delivery-deferred-retained", listingId);
+                MarkStateChanged();
+            }))
+            {
+                purchase.Queued = false;
+                AuditPurchase("delivery-queue-full-retained", listingId);
+            }
+        }
+
+        private static void AuditPurchase(string code, string id)
+        {
+            string message = "[TalentTrade] " + PendingPawnReturnAudit.Purchase(code, activeSaveToken, id);
+            if (code == "delivery-completed") LegacyTalentTradeRuntime.LogMessage(message);
+            else LegacyTalentTradeRuntime.LogWarning(message);
         }
 
         private static void HandleMarketPaid(string[] parts)
@@ -1513,7 +1557,8 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             if (!int.TryParse(parts[4], out partIndex)) return;
             int totalParts;
             if (!int.TryParse(parts[5], out totalParts)) return;
-            if (totalParts <= 0 || partIndex < 0 || partIndex >= totalParts) return;
+            if (string.IsNullOrEmpty(blobId) || blobId.Length > TalentTradeInputLimits.MaxIdCharacters ||
+                totalParts <= 0 || totalParts > TalentTradeInputLimits.MaxBlobParts || partIndex < 0 || partIndex >= totalParts) return;
 
             string partData = parts[6];
 
@@ -1522,10 +1567,16 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                 string[] blobParts;
                 if (!PendingBlobs.TryGetValue(blobId, out blobParts))
                 {
+                    if (PendingBlobs.Count >= TalentTradeInputLimits.MaxPendingBlobs) return;
                     blobParts = new string[totalParts];
                     PendingBlobs[blobId] = blobParts;
                 }
-
+                if (blobParts.Length != totalParts || (blobParts[partIndex] != null && blobParts[partIndex] != partData)) return;
+                long size = blobParts.Sum(part => (long)(part == null ? 0 : part.Length));
+                long retained = PendingBlobs.Values.Sum(blob => blob.Sum(part => (long)(part == null ? 0 : part.Length)));
+                int added = blobParts[partIndex] == null ? partData.Length : 0;
+                if (size + added > TalentTradeInputLimits.MaxProtocolCharacters ||
+                    retained + added > TalentTradeInputLimits.MaxQueuedCharacters) return;
                 blobParts[partIndex] = partData;
 
                 // Check if complete
@@ -1545,6 +1596,10 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                     }
                     // Reassembled blob — process as a protocol message
                     string assembled = sb.ToString();
+                    int prefixAt = assembled.IndexOf(TalentTradeProtocol.Prefix + "|", StringComparison.Ordinal);
+                    const string nestedBlobPrefix = "PHXTT|v1|blob|";
+                    if (prefixAt >= 0 && assembled.Length - prefixAt >= nestedBlobPrefix.Length &&
+                        string.CompareOrdinal(assembled, prefixAt, nestedBlobPrefix, 0, nestedBlobPrefix.Length) == 0) return;
                     ProcessProtocolMessage(assembled);
                 }
             }
@@ -1657,9 +1712,21 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         // --- Offline handling ---
 
         public static void TrackPurchase(string listingId)
+        { TryTrackPurchase(listingId); }
+
+        public static bool TryTrackPurchase(string listingId)
         {
+            if (string.IsNullOrEmpty(listingId) || listingId.Length > TalentTradeInputLimits.MaxIdCharacters ||
+                PendingPurchases.Count >= MaxPendingPurchases || PendingPurchases.ContainsKey(listingId) ||
+                Verse.Current.Game == null || string.IsNullOrEmpty(activeSaveToken) || !LegacyTalentTradeRuntime.IsOnline) return false;
+            MarketListing listing;
+            lock (MarketLock)
+                if (!MarketListings.TryGetValue(listingId, out listing) || listing.State != MarketListingState.Active ||
+                    string.IsNullOrEmpty(listing.SellerUuid) || listing.SellerUuid == GetLocalUuid()) return false;
+            PendingPurchases.Add(listingId, new PendingMarketPurchase(listing.SellerUuid, GetLocalUuid(),
+                activeSaveToken, Verse.Current.Game, Find.TickManager.TicksGame));
             MarkStateChanged();
-            PendingPurchases[listingId] = Find.TickManager.TicksGame;
+            return true;
         }
 
         private static void CheckPurchaseTimeouts()
@@ -1671,7 +1738,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
             foreach (var kvp in PendingPurchases)
             {
-                if (currentTick - kvp.Value > PURCHASE_TIMEOUT_TICKS)
+                if (!kvp.Value.TimedOut && currentTick - kvp.Value.StartedTick > PURCHASE_TIMEOUT_TICKS)
                 {
                     timedOut.Add(kvp.Key);
                 }
@@ -1679,13 +1746,9 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
             foreach (string listingId in timedOut)
             {
-                PendingPurchases.Remove(listingId);
-                lock (MarketLock)
-                {
-                    MarketListings.Remove(listingId);
-                }
-                LegacyTalentTradeRuntime.LogWarning($"【三角洲贸易】Purchase timeout for listing {listingId}, seller offline");
-                Messages.Message("Phinix_legacyTalentTrade_sellerOffline".Localize(), MessageTypeDefOf.RejectInput, false);
+                PendingPurchases[listingId].TimedOut = true;
+                AuditPurchase("purchase-timeout-retained", listingId);
+                Messages.Message("Phinix_legacyTalentTrade_purchaseUnknown".Localize(), MessageTypeDefOf.RejectInput, false);
             }
         }
 

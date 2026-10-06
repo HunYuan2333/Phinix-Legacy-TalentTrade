@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "packageId": "phinix.legacy.talent-trade",
   "name": "Talent trade",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "ownerDirectory": "LegacyTalentTrade",
   "contractAssembly": "LegacyTalentTradeExtension",
   "clientAssembly": "LegacyTalentTradeExtension.Client",
   "moduleId": "builtin.legacy-talent-trade",
   "status": "candidate-not-admitted",
-  "legacyClientKeyPreserved": false,
-  "sourceVisibility": "public"
+  "sourceVisibility": "public",
+  "legacyClientKeyPreserved": false
 }

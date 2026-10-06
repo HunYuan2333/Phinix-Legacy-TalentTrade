@@ -284,8 +284,12 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             string localName = TalentTradeManager.GetLocalDisplayName();
             string msg = TalentTradeProtocol.BuildMarketBuy(listing.Id, localUuid, localName);
             LegacyTalentTradeRuntime.LogMessage($"【三角洲贸易】Sending buy request: {msg}");
+            if (!TalentTradeManager.TryTrackPurchase(listing.Id))
+            {
+                Messages.Message("Phinix_legacyTalentTrade_purchaseRejected".Localize(), MessageTypeDefOf.RejectInput, false);
+                return;
+            }
             TalentTradeManager.SendProtocol(msg);
-            TalentTradeManager.TrackPurchase(listing.Id);
         }
 
         // --- Delist ---

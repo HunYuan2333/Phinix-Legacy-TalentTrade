@@ -26,6 +26,8 @@
     <Compile Include="TalentTradeLocalization.cs" />
     <Compile Include="PendingPawnReturnLedger.cs" />
     <Compile Include="PendingPawnReturnAudit.cs" />
+    <Compile Include="TalentTradeInputLimits.cs" />
+    <Compile Include="PendingMarketPurchase.cs" />
     <Compile Include="Properties/AssemblyInfo.cs" />
     <Compile Include="RentalContract.cs" />
     <Compile Include="RentalPanel.cs" />

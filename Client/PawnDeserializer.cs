@@ -71,8 +71,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             Pawn pawn = null;
             try
             {
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(xml);
+                XmlDocument doc = TalentTradeInputLimits.ReadPawnXml(xml);
 
                 XmlNode pawnNode = doc.DocumentElement;
                 if (pawnNode.Name == "saveable")

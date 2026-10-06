@@ -23,8 +23,14 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         { return value == null || value.Length <= 256 ? value : value.Substring(0, 256); }
 
         internal static string Json(string code, string saveToken, string listingId)
+        { return Serialize("talent.pending_return", code, saveToken, listingId); }
+
+        internal static string Purchase(string code, string saveToken, string listingId)
+        { return Serialize("talent.purchase", code, saveToken, listingId); }
+
+        private static string Serialize(string eventName, string code, string saveToken, string listingId)
         {
-            var entry = new Entry { time = DateTime.UtcNow.ToString("o"), code = Bounded(code),
+            var entry = new Entry { @event = eventName, time = DateTime.UtcNow.ToString("o"), code = Bounded(code),
                 saveToken = Bounded(saveToken), listingId = Bounded(listingId) };
             using (var stream = new MemoryStream())
             {

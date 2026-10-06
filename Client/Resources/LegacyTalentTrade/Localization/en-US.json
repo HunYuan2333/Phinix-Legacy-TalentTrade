@@ -117,6 +117,8 @@
     "Phinix_legacyTalentTrade_ocPawnBlocked": "This unit is protected by OC identity and cannot be traded. Don't ask me why, ask Lumi.",
     "Phinix_legacyTalentTrade_versionTitle": "Talent Trade {0}",
     "Phinix_legacyTalentTrade_versionText": "Talent Trade mod loaded, current version: {0}\n\nAccess trading features through the Phinix chat interface.",
-    "Phinix_legacyTalentTrade_listingExpired": "Listing expired: {0} has been returned via drop pod."
+    "Phinix_legacyTalentTrade_listingExpired": "Listing expired: {0} has been returned via drop pod.",
+    "Phinix_legacyTalentTrade_purchaseRejected": "Cannot start this purchase. Refresh the listings; an existing request may still be awaiting confirmation.",
+    "Phinix_legacyTalentTrade_purchaseUnknown": "The purchase is still awaiting confirmation. Its request is retained; do not assume failure or buy it again."
   }
 }
