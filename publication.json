@@ -9,5 +9,5 @@
   "moduleId": "builtin.legacy-talent-trade",
   "status": "candidate-not-admitted",
   "legacyClientKeyPreserved": false,
-  "sourceVisibility": "private"
+  "sourceVisibility": "public"
 }
