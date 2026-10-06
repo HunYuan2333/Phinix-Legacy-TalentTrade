@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md)
 
+The maintainer requires this source repository to remain **private**. Binary distribution is a separate, pending decision: the current anonymous store reader and admission checks require public release origins. Do not make this source public or put GitHub access tokens in the game client. Repository privacy does not conceal hardcoded legacy addresses in a distributed DLL.
+
 This repository contains one legacy plugin's own Contracts, Client and language resources. See `publication.json` for its identity. It is a managed Phinix DLL package, loaded through the same extension lifecycle as third-party plugins. It is not a RimWorld Workshop Mod.
 
 ## Building a candidate

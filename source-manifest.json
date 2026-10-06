@@ -42,10 +42,10 @@
     "Contracts/LegacyTalentTradeExtension.csproj": "223539e318b6f85b8c7a22b458b7e104d10d5eadb214bbaff3d2041751b23c6d",
     "Contracts/TalentTradeProtocol.cs": "a430df6adbb9fcc00829986cfeb1ae919ab73d8ebe6e3b6e4146f72944198432",
     "Directory.Build.props": "75cca0fa98bc028e2a981663db825ebcbb8143a4b114165eb2e2be83f3058c51",
-    "README.md": "ee9b726b7cd628b8bfe3bec960ed89092ec552b05a0de236bcc7a300630b5303",
-    "README.zh-CN.md": "5fb1545a85113db4bd90c08cb92fef3e2b2a11f3e414cb05cc772c6211d75701",
+    "README.md": "a1f5d8c20551545913f45176b44adba1b06ba867c34de6963b5abc0b341b9ab9",
+    "README.zh-CN.md": "c6d9308c989f5ffc2609cad981542c3d2f85ec0dac5eb6117ef868ffd3567aec",
     "check-source.py": "f1fd2bb90e367620ac622af4ad96edc6e24e20d977731755c4e8b2832919370e",
     "pack.py": "32fca98b8570cbb0f901a5e3e5961ca1d89655716907211e1eff32b5f4d45dcb",
-    "publication.json": "4274de6ccf13edc3fc168a6bf57553e29a9b6f06c1331cf32177c5f1b587720c"
+    "publication.json": "62836d99a54d32fcfc3f882d4208bd6f55fe58a25a0e7727b2e9c1cc3bb29c45"
   }
 }

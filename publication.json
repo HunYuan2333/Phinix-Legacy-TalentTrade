@@ -8,5 +8,6 @@
   "clientAssembly": "LegacyTalentTradeExtension.Client",
   "moduleId": "builtin.legacy-talent-trade",
   "status": "candidate-not-admitted",
-  "legacyClientKeyPreserved": false
+  "legacyClientKeyPreserved": false,
+  "sourceVisibility": "private"
 }
