@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AssemblyName>LegacyTalentTradeExtension.Client</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="BuiltInLegacyTalentTradeClientExtension.cs" />
+    <Compile Include="DefManifestHelper.cs" />
+    <Compile Include="DirectTrade.cs" />
+    <Compile Include="DirectTradePanel.cs" />
+    <Compile Include="DirectTradeWindow.cs" />
+    <Compile Include="GenScenePatches.cs" />
+    <Compile Include="LegacyTalentTradeRuntime.cs" />
+    <Compile Include="LegacyTalentTradeSettings.cs" />
+    <Compile Include="LegacyTalentTradeSettingsPanel.cs" />
+    <Compile Include="MarketListing.cs" />
+    <Compile Include="MarketPanel.cs" />
+    <Compile Include="PawnDeserializer.cs" />
+    <Compile Include="PawnSerializer.cs" />
+    <Compile Include="PawnSummary.cs" />
+    <Compile Include="PawnTextureAtlasGCPatch.cs" />
+    <Compile Include="TalentTradeLocalization.cs" />
+    <Compile Include="PendingPawnReturnLedger.cs" />
+    <Compile Include="PendingPawnReturnAudit.cs" />
+    <Compile Include="Properties/AssemblyInfo.cs" />
+    <Compile Include="RentalContract.cs" />
+    <Compile Include="RentalPanel.cs" />
+    <Compile Include="TalentTradeGameComponent.cs" />
+    <Compile Include="TalentTradeManager.cs" />
+    <Compile Include="TalentTradeTab.cs" />
+    <Compile Include="TalentTradeUi.cs" />
+    <Compile Include="TalentOfferLayout.cs" />
+    <Compile Include="TalentTradeTransport.cs" />
+    <Compile Include="TradeablePawnUtility.cs" />
+    <Compile Include="TradeOfferSerializer.cs" />
+    <Compile Include="TransferCompatibilityUi.cs" />
+    <Compile Include="VersionNotifier.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>$(HarmonyReferences)/0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(GameReferences)/Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="System">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="System.Core">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(GameReferences)/UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(GameReferences)/UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(GameReferences)/UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(GameReferences)/UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <ProjectReference Include="../Contracts/LegacyTalentTradeExtension.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+    <Reference Include="ClientExtensionAbstractions">
+      <HintPath>$(PhinixPackage)/Common/Assemblies/10-ClientExtensionAbstractions.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UserManagement">
+      <HintPath>$(PhinixPackage)/Common/Assemblies/08-UserManagement.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Utils">
+      <HintPath>$(PhinixPackage)/Common/Assemblies/03-Utils.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

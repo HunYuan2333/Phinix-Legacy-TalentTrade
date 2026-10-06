@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "assemblyName": "LegacyTalentTradeExtension.Client",
+  "resources": [
+    {
+      "path": "Resources/LegacyTalentTrade/Localization/en-US.json",
+      "length": 8751,
+      "sha256": "ff7243539883ce5c554fe07f9e6d20fbcece2b95991750d7c2c33c1b6c0152a0"
+    },
+    {
+      "path": "Resources/LegacyTalentTrade/Localization/zh-CN.json",
+      "length": 8674,
+      "sha256": "934a3181d97861d5414c9676724c05c78fe52c10bf3cd611a4cd05e4f15d3c03"
+    }
+  ],
+  "localization": {
+    "defaultLocale": "en-US",
+    "files": [
+      "Resources/LegacyTalentTrade/Localization/en-US.json",
+      "Resources/LegacyTalentTrade/Localization/zh-CN.json"
+    ]
+  }
+}
