@@ -1,32 +1,97 @@
-# Phinix 旧版插件
+# Phinix 旧版人才贸易插件
 
-[English](README.md)
+<p align="center">
+  <a href="./README.md">English</a> · 简体中文
+</p>
 
-维护者选择正常的 **public 源码与 GitHub Release** 路线。索引准入先做静态检查，再由维护者亲自添加 `plugin-approved`。不要给游戏客户端放 GitHub 访问 token；按维护者明确要求保留旧版连接参数。
+Phinix 经典人才贸易模组的官方托管插件移植版本（包 ID: `phinix.legacy.talent-trade`），在 RimWorld 1.6 中实现殖民地间的殖民者交易、雇佣与租赁功能。
 
-本仓库只包含一个旧版插件自己的 Contracts、Client 和语言资源，身份见 `publication.json`。它通过与第三方相同的 Phinix 扩展生命周期加载，是托管 DLL 包，不是工坊 Mod。
+---
 
-## 构建候选包
+## 概述与原作者署名
 
-安装 Python 3.10+ 和 .NET SDK 10，提供已构建或安装的 Phinix Mod，以及自己合法安装的 RimWorld 1.6 程序集。人才插件还需要 Harmony 2.3.6。这些文件只用于编译，不得提交或随包发行；本地构建无需 Git 或 GitHub CLI。
+- **功能定位**：通过 Phinix 联网基础设施，提供跨殖民地的人才市场、点对点交易及借用租赁。
+- **原作者署名**：本项目基于社区原作者 **iniad** 编写的经典 Talent Trade 模组进行现代重构。原作者权利及许可条款完整保留；本仓库提供适配 Phinix Rework 的独立托管插件版本。
+- **分发模式**：已彻底从 Phinix 主模组包剥离。作为独立托管 DLL 插件运行，遵循标准 Phinix 扩展生命周期。
 
-```sh
-python check-source.py
-python pack.py --phinix-package /path/to/phinix-rework \
-  --game-references /path/to/RimWorldLinux_Data/Managed \
-  --harmony-references /path/to/Harmony/Assemblies \
-  --packager /path/to/ManagedPackageTool.dll \
-  --output /tmp/plugin-candidate.zip \
-  --bundle-output /tmp/plugin-candidate \
-  --display-output /tmp/plugin-display.json
+---
+
+## 获取与安装
+
+### 游戏内商店安装（推荐）
+
+1. 在 RimWorld 游戏内打开 Phinix 窗口，切换至 **商店**（Store）Tab。
+2. 找到 **Talent trade**（版本 1.0.1），点击 **安装**（Install）。
+3. **完全退出并重启 RimWorld** 以加载新安装的程序集。
+
+### 前置运行要求
+
+- **RimWorld 1.6**
+- **Phinix Rework**（提供宿主扩展运行时与客户端抽象支持）
+- **Harmony 2.3.6+**（用于殖民者序列化与数据传输补丁）
+
+---
+
+## 核心功能与使用
+
+1. **人才市场（Market）**：
+   - 浏览其他在线玩家挂牌出售的殖民者与奴隶。
+   - 购买前支持查看目标人物的特性、技能、身体状况及装备概览。
+2. **直接交易（Direct Trade）**：
+   - 与指定的在线殖民地发起点对点交易谈判。
+   - 支持殖民者互换或以白银购买。
+3. **人才租赁（Rental）**：
+   - 将自有殖民者短期出租给其他殖民地，赚取租金。
+   - 租期到期后，被租借的人才将自动返还至所属母殖民地。
+4. **输入安全保护**：
+   - 严格拦截负数金额、非法字符及越界合约参数，防止恶意或异常数据提交。
+
+---
+
+## 存档机制与持久化限制
+
+- **GameComponent 存储**：活跃挂牌与租赁回队数据保存在存档文件（`.rws`）的专属 `GameComponent` 中。
+- **服务器权威确认**：所有人才转移均需经过专用服务器权威确认并返回凭证；本地点击发送不代表交易已成功落地。
+- **内存态购买意图**：进行中的购买请求在游戏会话中暂存于内存；若在服务器结算前游戏异常闪退或重启，无法自动恢复未结算的事务。
+
+---
+
+## 停用与卸载风险警示
+
+> [!CAUTION]
+> 若当前存档中存在**正在挂牌出售的殖民者、外出租赁未归的人员或等待结算的返还记录**，**请勿直接停用或卸载本插件**。缺少本插件加载可能导致反序列化失败，甚至导致相关殖民者永久遗失。
+
+### 安全卸载流程
+
+1. 撤回人才市场上所有正在出售的殖民者并接回地图。
+2. 等待外出租赁的所有殖民者全员归队。
+3. 保存游戏，并确认人才贸易账本中已无未完成的在途合约。
+4. 在 **扩展管理**（Extension Manager）中停用或卸载 **Talent trade**，并重启游戏。
+
+---
+
+## 构建与候选包验证
+
+需要 .NET 10 SDK、本地 Phinix-Rework 源码及 RimWorld 1.6 依赖：
+
+```bash
+# 核验源码与引用归属
+python3 check-source.py
+
+# 打包候选 ZIP
+python3 pack.py \
+  --phinix-package <path-to-Phinix-Rework> \
+  --game-references <path-to-RimWorld-Managed> \
+  --harmony-references <path-to-Harmony-Assemblies> \
+  --packager <path-to-ManagedPackageTool.dll> \
+  --output <path-to-output>/phinix-legacy-talenttrade-1.0.1.zip
 ```
 
-打包器须从可信的 Phinix 源码 `Extensions/PluginStore/Tools/ManagedPackageTool` 构建。ZIP 仅包含 manifest、自己的两个 DLL 和语言文件；不包含主体、交易、库存、Harmony 或游戏 DLL。程序集、模块、类型、设置、codec 和存储身份保持原样。
+严禁将 RimWorld 游戏程序集、Harmony 或宿主程序集打包进分发 ZIP 中。
 
-## 发布边界
+---
 
-源码 CI 只核对文件归属、编译引用、语言声明和固定快照，不上传游戏程序集，也不调用线上业务服务。编译和静态包校验通过不代表游戏验收通过。
+## 故障排查与求助
 
-独立版游戏验收前，两插件继续随主体发行。不要把候选包与内置版本同时加载，避免重复程序集和模块。红包依赖现有交易、库存模块和其他人维护的旧中继；按维护者明确要求保留原有客户端访问参数。人才保留旧服务、GameComponent 类型和存档字段。拆仓不新增授权或擅自指定 MIT，原作者权利继续保留。
-
-正规发布需要固定源码提交、不可变 ZIP、索引申请 Issue 和维护者亲自添加 `plugin-approved`。红包未决发送及重启核对、人才晚加载组件及缺包重新保存仍是发行门槛；通过前，候选包不上正式目录，主体保留内置 DLL。
+- **交易挂起**：检查与 Phinix 服务器的网络连通性；所有交易操作需等待服务器权威返回。
+- **日志提报**：在 GitHub 提交反馈时，请提供脱敏后的游戏日志（`Player.log`）、RimWorld 确切版本、Phinix 版本及本插件版本。提报前请务必抹去个人凭证与私有密钥信息。
