@@ -6,6 +6,14 @@
 
 Phinix 经典人才贸易模组的官方托管插件移植版本（包 ID: `phinix.legacy.talent-trade`），在 RimWorld 1.6 中实现殖民地间的殖民者交易、雇佣与租赁功能。
 
+> [!NOTE]
+> - **技术指南**：关于公开 API、生命周期、线程与资源所有权规范，详见 [Phinix 插件开发指南](https://github.com/HunYuan2333/Phinix-Rework/blob/dev/docs/%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97.md)。
+> - **架构与生命周期状态**：本插件目前基于 `IPhinixExtensionModule` 传统生命周期接口运行，**尚未迁移至现代 DI 组合模式（`ClientExtensionModule.Compose`）**。
+> - **Harmony 补丁约束**：所有补丁均在 `Activate` 中挂载并在 `Shutdown` 中卸载；严禁在静态构造函数中挂补丁，以确保插件在被扩展管理器停用时实现真正的零补丁挂载。
+> - **存档持久化限制**：租借记录与市场挂牌数据保存在存档的专属 `GameComponent` 中。存档内仍有活跃交易或外出租赁人员时，严禁卸载本插件，否则会导致反序列化错误坏档。
+> - **CI 与自动构建**：GitHub Actions 自动构建工作流（main 提交自动编译打包，dev 不编译）正在 F7 统一规划实施中；目前通过本地 `pack.py` 完成打包。
+> - **Skill 说明**：Phinix 插件开发 skill 正在准备中，后续将补充链接。
+
 ---
 
 ## 概述与原作者署名

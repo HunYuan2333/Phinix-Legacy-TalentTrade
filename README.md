@@ -6,6 +6,14 @@
 
 The official Phinix managed plugin port of the legacy Talent Trade mod (Package ID: `phinix.legacy.talent-trade`), enabling inter-colony trading, hiring, and pawn transfers in RimWorld 1.6.
 
+> [!NOTE]
+> - **Technical Guide**: For full documentation on public APIs, lifecycle, threading, and resource ownership, see the [Phinix Plugin Development Guide](https://github.com/HunYuan2333/Phinix-Rework/blob/dev/docs/Plugin-Development.md).
+> - **Lifecycle Status**: This plugin runs via the legacy `IPhinixExtensionModule` lifecycle interface and has **not yet migrated to modern DI composition (`ClientExtensionModule.Compose`)**.
+> - **Harmony Patching Constraint**: All Harmony patches are applied during `Activate` and removed during `Shutdown`; patching in static constructors is strictly prohibited to ensure that disabling the extension achieves true zero-patch isolation.
+> - **Save Persistence Boundary**: Active market listings and rental return records reside in a save-local `GameComponent`. Never uninstall this plugin while transactions or outbound rentals are active, as missing types upon save loading can corrupt pawn state.
+> - **CI & Automated Builds**: GitHub Actions automated compilation (build/package on main push only, no dev build) is actively scheduled under F7; packaging currently uses the local `pack.py` entry point.
+> - **Skill Notice**: The Phinix plugin development skill is currently in preparation; integration links will be added once ready.
+
 ---
 
 ## Overview & Attribution
