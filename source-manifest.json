@@ -48,10 +48,13 @@
     "check-source.py": "f1fd2bb90e367620ac622af4ad96edc6e24e20d977731755c4e8b2832919370e",
     "pack.py": "55fd2abc7199b069c0bfe1e2498191d281c8c76246a54ae45adccaa579f76be0",
     "publication.json": "88e7e54130598f63052a48409277324c788fd1df2065cc7593185cd32301e4c9",
-    ".github/workflows/release.yml": "3536fb958128e522ef6ac4736a49b75765b80862c07642fb4b050b6613792055",
+    ".github/workflows/release.yml": "f73c653e49c42f162f1acc83375ddd620120d0e763a8eec1c614d1f533a790d3",
     "ci/publish.py": "196e449c9263f368330c3eef2bb064eaff7e7e9b33c33e56427cb2c834480ce1",
     "ci/build.py": "b84da522c7a143978c2ed070c2cae045a6d97f19b15e73578fdcda302baa0f5c",
     "ci/release.py": "c0aaa06f1b07ceef640c57510f76941d13c08557aceb1a0128c6994fb3f6b169",
-    "ci/config.json": "4826e2c13ef4464444aadf56fe9e6a8ebb9ad7b6946db700b2f3e9c70a0257c7"
+    "ci/config.json": "4826e2c13ef4464444aadf56fe9e6a8ebb9ad7b6946db700b2f3e9c70a0257c7",
+    "ci/notify_index.py": "895680edf54f3ae2bfe1e139421d500725ba71c9d30d48437829377acfea7d9a",
+    "ci/tests/test_notify_index.py": "2954ce9110f369002cf1f371cc7b454684b92b4380def8e24c94d7a391253b8b",
+    "ci/INDEX-NOTIFICATION.md": "a64a05fee2bd8dbd5cec1088a19ae1b39b69586681becc1f6f0d80aa370b3784"
   }
 }
