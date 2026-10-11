@@ -8,7 +8,7 @@ The official Phinix managed plugin port of the legacy Talent Trade mod (Package 
 
 > [!NOTE]
 > - **Technical Guide**: For full documentation on public APIs, lifecycle, threading, and resource ownership, see the [Phinix Plugin Development Guide](https://github.com/HunYuan2333/Phinix-Rework/blob/dev/docs/Plugin-Development.md).
-> - **Lifecycle Status**: This plugin runs via the legacy `IPhinixExtensionModule` lifecycle interface and has **not yet migrated to modern DI composition (`ClientExtensionModule.Compose`)**.
+> - **Lifecycle Status**: Current source uses `ClientExtensionModule.Compose`; the plugin's old `Register` entry is removed. Packages require abstractions `>=1.9.0 <3.0.0`. Full DI/static-context and callback-lifecycle remediation remains pending; local compilation and package validation do not certify release or game acceptance.
 > - **Harmony Patching Constraint**: All Harmony patches are applied during `Activate` and removed during `Shutdown`; patching in static constructors is strictly prohibited to ensure that disabling the extension achieves true zero-patch isolation.
 > - **Save Persistence Boundary**: Active market listings and rental return records reside in a save-local `GameComponent`. Never uninstall this plugin while transactions or outbound rentals are active, as missing types upon save loading can corrupt pawn state.
 > - **CI & Automated Builds**: GitHub Actions automated compilation (build/package on main push only, no dev build) is actively scheduled under F7; packaging currently uses the local `pack.py` entry point.
@@ -103,3 +103,13 @@ Never commit or redistribute RimWorld, Harmony, or host assemblies in the candid
 
 - **Transfer Pending**: Check network connectivity to the Phinix server; transactions pend until the server returns authoritative confirmation.
 - **Log Submission**: When reporting issues on GitHub, provide sanitized player logs (`Player.log`), exact game version, Phinix version, and plugin version. Remove any private player identities or server credentials before posting logs.
+
+
+2026-10-10：按用户确认新增客户端抽象 1.9 维护线，和 2.0 分别编译；默认新版本 1.1.0。范围、版本号及命令参数见 [客户端兼容构建](Client-Compatibility.md)。原先“仅 2.0”说明由本节更新。本地包已完成最终静态和宿主引用校验，游戏内验收及正式发布仍待完成。
+
+
+**当前方案已修正为单包内部适配**：版本 1.1.1 的同一 ZIP 支持 API 1.9/2.0；之前两条发行线说明已撤销。旧接口和运行时识别仅在内部 adapter。构建基线、宿主绑定过渡和验证限制见 [客户端兼容说明](Client-Compatibility.md)。
+
+## T4 local theme integration
+
+The unpublished 1.1.2 candidate keeps one binary for client APIs 1.9/current. A private theme adapter binds ordinary current theme registration and immutable palettes; 1.9 uses plugin defaults. UI/business code has no version branches. Online publication remains deferred. See Client-Compatibility.md; game acceptance is pending.

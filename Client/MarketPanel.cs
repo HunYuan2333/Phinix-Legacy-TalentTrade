@@ -48,6 +48,11 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         public void Draw(Rect rect)
         {
+            using (TalentTradeTheme.BeginDraw()) DrawContents(rect);
+        }
+
+        private void DrawContents(Rect rect)
+        {
             if (rect.width <= 0f || rect.height <= 0f) return;
             float height = toolbar.Draw(rect, sellMode ? 1 : 4, sellMode ? 1 : 0,
                 sellMode ? "Phinix_legacyTalentTrade_cancel" : "Phinix_legacyTalentTrade_marketSell");

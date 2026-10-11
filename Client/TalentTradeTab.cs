@@ -24,10 +24,15 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         public void Draw(Rect inRect)
         {
+            using (TalentTradeTheme.BeginDraw()) DrawContents(inRect);
+        }
+
+        private void DrawContents(Rect inRect)
+        {
             if (inRect.width <= 0f || inRect.height <= 0f) return;
             if (!LegacyTalentTradeRuntime.IsOnline)
             {
-                Widgets.DrawMenuSection(inRect);
+                TalentTradeTheme.Surface(inRect);
                 Widgets.NoneLabelCenteredVertically(inRect, "Phinix_legacyTalentTrade_pleaseLogIn".Localize());
                 return;
             }

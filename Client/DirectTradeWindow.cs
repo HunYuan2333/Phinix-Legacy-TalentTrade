@@ -61,6 +61,11 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         public override void DoWindowContents(Rect inRect)
         {
+            using (TalentTradeTheme.BeginDraw()) DrawContents(inRect);
+        }
+
+        private void DrawContents(Rect inRect)
+        {
             DirectTrade current = TalentTradeManager.GetTrade(trade.Id);
             if (current == null || current.State == DirectTradeState.Completed || current.State == DirectTradeState.Cancelled)
             {
@@ -127,7 +132,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         private void DrawOffer(Rect rect, TradeOffer offer, bool mine, bool isInitiator)
         {
             if (rect.width <= 0f || rect.height <= 0f) return;
-            Widgets.DrawMenuSection(rect);
+            TalentTradeTheme.Surface(rect);
             Rect inner = TalentTradeUi.Inset(rect, 6f);
             Vector2 scroll = mine ? myScroll : theirScroll;
             int count = offer == null ? 0 : offer.Pawns.Count;
@@ -160,7 +165,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                     ShowPawnPicker(isInitiator);
                 TalentTradeUi.Label(new Rect(rect.x, rect.y + 30f, rect.width, 20f),
                     "Phinix_legacyTalentTrade_tradeSilverAmount".Localize() + " (" + "Phinix_legacyTalentTrade_silver".Localize() + ")");
-                silverBuffer = Widgets.TextField(new Rect(rect.x, rect.y + 50f, rect.width, 28f), silverBuffer);
+                silverBuffer = TalentTradeTheme.TextField(new Rect(rect.x, rect.y + 50f, rect.width, 28f), silverBuffer,controlName:"phinix.talent.silver");
                 int.TryParse(silverBuffer, out silverValue);
                 silverValue = Mathf.Max(0, silverValue);
             }
@@ -186,7 +191,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                 label = summary.GetDisplayLabel();
                 pawnLabels.Add(summary, label);
             }
-            if (Mouse.IsOver(rect)) Widgets.DrawHighlight(rect);
+            if (Mouse.IsOver(rect)) TalentTradeTheme.Highlight(rect);
             float buttonWidth = canRemove ? Mathf.Min(60f, rect.width) : 0f;
             float textWidth = Mathf.Max(0f, rect.width - buttonWidth - (canRemove ? SPACING : 0f));
             TalentTradeUi.Label(new Rect(rect.x, rect.y, textWidth, 24f), label);

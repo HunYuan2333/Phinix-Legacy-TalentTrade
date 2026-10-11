@@ -8,6 +8,8 @@
     <AssemblyName>LegacyTalentTradeExtension.Client</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Compatibility/ThemeAdapter.cs" />
+    <Compile Include="TalentTradeTheme.cs" />
     <Compile Include="BuiltInLegacyTalentTradeClientExtension.cs" />
     <Compile Include="DefManifestHelper.cs" />
     <Compile Include="DirectTrade.cs" />
@@ -69,6 +71,10 @@
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(GameReferences)/UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(GameReferences)/UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">

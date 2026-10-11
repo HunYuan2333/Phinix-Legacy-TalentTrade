@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packageId": "phinix.legacy.talent-trade",
   "name": "Talent trade",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "ownerDirectory": "LegacyTalentTrade",
   "contractAssembly": "LegacyTalentTradeExtension",
   "clientAssembly": "LegacyTalentTradeExtension.Client",

@@ -22,6 +22,11 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         public void DrawSettings(Listing_Standard listing, IClientSettingsContext settings)
         {
+            using (TalentTradeTheme.BeginDraw()) DrawSettingsContents(listing, settings);
+        }
+
+        private void DrawSettingsContents(Listing_Standard listing, IClientSettingsContext settings)
+        {
             float width = Mathf.Max(1f, listing.ColumnWidth);
             if (cachedWidth != width || !ReferenceEquals(cachedLanguage, TalentTradeLocalization.LanguageToken))
             {
@@ -36,7 +41,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             }
             bool notifications = LegacyTalentTradeRuntime.Settings.EnableNotifications;
             Rect notificationsRect = listing.GetRect(notificationsHeight);
-            Widgets.CheckboxLabeled(notificationsRect, notificationsLabel, ref notifications);
+            TalentTradeTheme.Checkbox(notificationsRect, notificationsLabel, ref notifications);
             TooltipHandler.TipRegion(notificationsRect, notificationsTip);
             if (notifications != LegacyTalentTradeRuntime.Settings.EnableNotifications)
             {
@@ -47,7 +52,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
             bool debugLog = LegacyTalentTradeRuntime.Settings.EnableDebugLog;
             Rect debugRect = listing.GetRect(debugHeight);
-            Widgets.CheckboxLabeled(debugRect, debugLabel, ref debugLog);
+            TalentTradeTheme.Checkbox(debugRect, debugLabel, ref debugLog);
             TooltipHandler.TipRegion(debugRect, debugTip);
             if (debugLog != LegacyTalentTradeRuntime.Settings.EnableDebugLog)
             {

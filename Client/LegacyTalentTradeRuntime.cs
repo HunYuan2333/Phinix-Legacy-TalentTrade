@@ -8,7 +8,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 {
     /// <summary>
     /// 插件运行时宿主：把原 mod 对 `Client.Instance` 的耦合集中到一处，
-    /// 由插件入口在 Register/Activate 时注入框架服务（解耦清单见实施方案 §3.7）。
+    /// 由插件入口在 Compose/Activate 时注入框架服务。
     /// </summary>
     internal static class LegacyTalentTradeRuntime
     {

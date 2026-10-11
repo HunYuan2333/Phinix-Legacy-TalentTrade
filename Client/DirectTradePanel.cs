@@ -60,6 +60,11 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         public void Draw(Rect rect)
         {
+            using (TalentTradeTheme.BeginDraw()) DrawContents(rect);
+        }
+
+        private void DrawContents(Rect rect)
+        {
             if (rect.width <= 0f || rect.height <= 0f) return;
             var split = ResponsiveSplitLayout.Calculate(rect, new Vector2(240f, rect.height),
                 new Vector2(320f, rect.height), new Vector2(rect.width * 0.4f, rect.height), SPACING, tabs.Selected == 0);
@@ -113,7 +118,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         private void DrawUserRow(Rect rect, string uuid)
         {
-            if (Mouse.IsOver(rect)) Widgets.DrawHighlight(rect);
+            if (Mouse.IsOver(rect)) TalentTradeTheme.Highlight(rect);
             Rect inner = TalentTradeUi.Inset(rect, 4f);
             bool compact = rect.width < 240f;
             float buttonWidth = Mathf.Min(BUTTON_WIDTH, inner.width);
@@ -163,7 +168,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         {
             if (Mouse.IsOver(rect))
             {
-                Widgets.DrawHighlight(rect);
+                TalentTradeTheme.Highlight(rect);
             }
 
             Rect inner = TalentTradeUi.Inset(rect, 4f);

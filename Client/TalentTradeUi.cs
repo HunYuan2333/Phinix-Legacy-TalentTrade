@@ -37,7 +37,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         {
             if (rect.width <= 0f || rect.height <= 0f) return false;
             TooltipHandler.TipRegion(rect, text);
-            return Widgets.ButtonText(rect, text);
+            return TalentTradeTheme.Button(rect, text);
         }
     }
 
@@ -73,7 +73,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             }
             // Clip navigation only at physically unusable sizes.
             GUI.BeginGroup(rect);
-            try { TabDrawer.DrawTabsOverflow(new Rect(0f, 0f, rect.width, rect.height), tabs, 80f, 180f); }
+            try { GUI.color=TalentTradeTheme.Current["talent-trade.accent"]; TabDrawer.DrawTabsOverflow(new Rect(0f, 0f, rect.width, rect.height), tabs, 80f, 180f); }
             finally { GUI.EndGroup(); }
             return TalentTradeUi.Below(rect, height);
         }
@@ -119,9 +119,9 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             for (int i = 0; i < layout.VisibleActionCount; i++)
             {
                 TooltipHandler.TipRegion(buttons[i], labels[i]);
-                if (Widgets.ButtonText(buttons[i], labels[i], active: i != disabledIndex)) activate(i);
+                if (TalentTradeTheme.Button(buttons[i], labels[i], active: i != disabledIndex)) activate(i);
             }
-            if (layout.HasOverflow && Widgets.ButtonText(layout.OverflowButtonRect, "⋯"))
+            if (layout.HasOverflow && TalentTradeTheme.Button(layout.OverflowButtonRect, "⋯"))
             {
                 var options = new List<FloatMenuOption>();
                 for (int i = layout.VisibleActionCount; i < count; i++)
@@ -163,7 +163,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         public bool Draw(Rect rect)
         {
-            Widgets.DrawMenuSection(rect);
+            TalentTradeTheme.Surface(rect);
             Rect inner = TalentTradeUi.Inset(rect, 6f);
             var textRect = new Rect(inner.x, inner.y, inner.width, textHeight);
             GameFont font = Verse.Text.Font;
@@ -174,7 +174,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             {
                 Widgets.Label(textRect, Text);
                 TooltipHandler.TipRegion(textRect, Tooltip);
-                return Widgets.ButtonText(TalentTradeUi.Below(inner, textHeight + 6f), ActionLabel);
+                return TalentTradeTheme.Button(TalentTradeUi.Below(inner, textHeight + 6f), ActionLabel);
             }
             finally { Verse.Text.Font = font; Verse.Text.WordWrap = wrap; }
         }
@@ -222,7 +222,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         public void Begin(Rect rect, Pawn pawn)
         {
-            Widgets.DrawMenuSection(rect);
+            TalentTradeTheme.Surface(rect);
             rect = TalentTradeUi.Inset(rect, 6f);
             float available = Mathf.Max(1f, rect.width - 16f);
             if (width != available || !ReferenceEquals(cachedPawn, pawn) ||
@@ -264,19 +264,19 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         public bool PawnButton()
         {
             TooltipHandler.TipRegion(rows[0].InputRect, pawnLabel);
-            return Widgets.ButtonText(rows[0].InputRect, pawnLabel);
+            return TalentTradeTheme.Button(rows[0].InputRect, pawnLabel);
         }
 
         public void Number(int row, ref string buffer, ref int value, int minimum)
         {
-            buffer = Widgets.TextField(rows[row].InputRect, buffer);
+            buffer = TalentTradeTheme.TextField(rows[row].InputRect, buffer);
             int.TryParse(buffer, out value);
             value = Math.Max(minimum, value);
         }
 
         public bool Confirm(bool enabled)
         {
-            return Widgets.ButtonText(confirm, confirmLabel, active: enabled);
+            return TalentTradeTheme.Button(confirm, confirmLabel, active: enabled);
         }
 
         public void End() { Widgets.EndScrollView(); }

@@ -56,6 +56,11 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         public void Draw(Rect rect)
         {
+            using (TalentTradeTheme.BeginDraw()) DrawContents(rect);
+        }
+
+        private void DrawContents(Rect rect)
+        {
             if (rect.width <= 0f || rect.height <= 0f) return;
             bool creating = viewMode == ViewMode.ListForRent;
             float height = toolbar.Draw(rect, creating ? 1 : 4, creating ? 1 : 0,

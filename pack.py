@@ -13,12 +13,14 @@ def main():
     parser.add_argument('--game-references', type=Path, required=True)
     parser.add_argument('--harmony-references', type=Path)
     parser.add_argument('--packager', type=Path, required=True, help='ManagedPackageTool.dll, built from trusted Phinix source')
+    parser.add_argument('--version', help='Local package version; defaults to publication.json')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--bundle-output', type=Path)
     parser.add_argument('--display-output', type=Path)
     args = parser.parse_args()
     root = Path(__file__).resolve().parent
     metadata = json.loads((root / 'publication.json').read_text())
+    if args.version: metadata['version'] = args.version
     host = args.phinix_package.resolve()
     game = args.game_references.resolve()
     output = args.output.resolve()
@@ -31,7 +33,8 @@ def main():
         build += ['-p:HarmonyReferences=' + str(args.harmony_references.resolve())]
     subprocess.run(build, check=True)
     command = ['dotnet', str(args.packager.resolve()), '--package-id', metadata['packageId'],
-               '--name', metadata['name'], '--version', metadata['version'], '--output', str(output)]
+               '--name', metadata['name'], '--version', metadata['version'], '--output', str(output),
+               '--abstractions-range', '>=1.9.0 <3.0.0', '--compile-client-api', '1.9.0']
     for part, key in [('Contracts', 'contractAssembly'), ('Client', 'clientAssembly')]:
         command += ['--assembly', str(root / part / 'bin/Release/net472' / (metadata[key] + '.dll'))]
     for path in sorted((root / 'Client/Resources').rglob('*.json')):

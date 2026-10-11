@@ -10,14 +10,14 @@ using Utils.Framework;
 namespace Phinix.LegacyTalentTradeExtension.Client
 {
     /// <summary>
-    /// 人才贸易插件入口（Rework 插件化：IPhinixExtensionModule）。
+    /// 人才贸易插件入口：通过 ClientExtensionModule.Compose 注册公开能力。
     ///
-    /// 设计哲学 §1.1 插件平权；§3.7 协议经中继（Legacy 适配器例外），不注入框架管线。
+    /// 设计哲学 §1.1 插件平权；人才贸易独立的中继协议由自身 transport 负责。
     /// Harmony 补丁挂载约束（与禁用机制联动）：PatchAll 在 Activate，UnpatchAll 在 Shutdown；
     /// 禁止静态构造器挂补丁（程序集被扩展扫描加载时会绕过禁用）。
     /// </summary>
     [PhinixExtension("builtin.legacy-talent-trade")]
-    public sealed class BuiltInLegacyTalentTradeClientExtension : IPhinixExtensionModule, IActivatablePhinixExtensionModule
+    public sealed class BuiltInLegacyTalentTradeClientExtension : ClientExtensionModule, IActivatablePhinixExtensionModule
     {
         private const string HarmonyId = "iniad.legacytalenttrade";
 
@@ -28,9 +28,9 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         // 若无此标志，主线程繁忙/卡顿时队列会积压到溢出）
         private int updatePending;
 
-        public string ExtensionId => "builtin.legacy-talent-trade";
+        public override string ExtensionId => "builtin.legacy-talent-trade";
 
-        public void Register(IExtensionBuilder builder)
+        public override void Compose(IExtensionBuilder builder)
         {
             builder.RegisterApi<IMainTabProvider>(TalentTradeTab.Instance);
             builder.RegisterApi<IClientSettingsPanelProvider>(new LegacyTalentTradeSettingsPanel());
@@ -40,6 +40,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         {
             if (activated) return;
             TalentTradeLocalization.Bind(hostContext.GetRequiredService<IClientLocalizationService>().ForModule(this));
+            TalentTradeTheme.Start(hostContext,this);
 
             LegacyTalentTradeRuntime.Session = hostContext.GetRequiredService<IClientSessionContext>();
             LegacyTalentTradeRuntime.Users = hostContext.GetRequiredService<IClientUserDirectory>();
@@ -96,6 +97,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         public void Shutdown(ExtensionHostContext hostContext)
         {
             TalentTradeLocalization.Bind(null);
+            TalentTradeTheme.Stop();
             if (!activated) return;
             activated = false;
             LegacyTalentTradeRuntime.IsActive = false;
