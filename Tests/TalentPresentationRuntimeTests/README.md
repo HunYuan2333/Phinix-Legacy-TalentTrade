@@ -1,0 +1,13 @@
+# Talent direct presentation binding checks
+
+Compile production candidate against SDK1.9 first. `dotnet run --project Tests/TalentPresentationRuntimeTests -c Release --no-restore` loads that actual DLL against current SDK public models with an explicit fake registry/session. Tests scope ownership/disposal, stale guards, public fields/list/theme/actions/confirmation, provider lifecycle, editable states, unknown/damaged metadata and missing-race gate. It does not drive native GUI, pawn Scribe, networking, delivery or return.
+
+Previous mode excludes CurrentProbe: supply a directory with SDK1.9 reference DLLs under their actual assembly names (`ClientExtensionAbstractions.dll`, `Utils.dll`, `UserManagement.dll`), then build with `-p:Previous=true -p:ProbeReferences=... -p:OutputPath=/tmp/talent-previous/`, and run its DLL with `--previous`. This checks actual types and retaining the old provider, not in-game old-client behavior.
+
+B39 adds actual catalog public model construction with fixed navigation/filter headers, danger action menu, draft defensive-copy checks, numeric/visibility rules, heartbeat timestamp exclusion and material price invalidation. Settings test bypasses native Window construction and invokes the actual projection/actions against a fake settings context to verify the original two keys. It does not claim native settings Window rendering or disk-save acceptance. Session failed-open cleanup is covered. Current count57; previous count3. Fingerprints hash streamed view facts and are not equality/authorization proofs.
+
+Final checks also cover null-race fallback and visible race evidence in the production row projection.
+
+B40 current count72; previous count3. Regression first reproduces the production null-key exception by switching the actual TalentTradeTab from Market to Direct. It then covers empty/unknown selection, all three branches, fake Host open/publish failures, retained public navigation, stable fault page without automatic retry, explicit recovery, stale action rejection and unchanged business StateVersion. Native game rendering/real networking remain untested.
+
+B41 current81 / previous3. Adds actual bridge IconSource projection (no texture allocation), uninitialized ThingDef with real RaceProperties humanlike/animal policy, real load-scope initialization/restoration/busy guard and existing return-ledger exact payload/dedup/deferred/uncertain behavior. Native Scribe XML/postload/portraits remain game-only. Production XmlToPawn IL inspected for single FinalizeLoading and no manual cross-ref/postload calls; current1.6 game IL confirms mode and life-stage null previous-stage cause.

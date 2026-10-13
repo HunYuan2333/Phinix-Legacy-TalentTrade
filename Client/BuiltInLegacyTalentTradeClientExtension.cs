@@ -22,6 +22,8 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         private const string HarmonyId = "iniad.legacytalenttrade";
 
         private Harmony harmony;
+        private LegacyTalentTradeSettingsPanel settingsPanel;
+        internal static TalentHostPresentation Presentation { get; private set; }
         private System.Timers.Timer driveTimer;
         private bool activated;
         // 防重复入队：队列中已有待执行的 Update 时不再入队（Timer 200ms 远快于主线程消费，
@@ -32,8 +34,9 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         public override void Compose(IExtensionBuilder builder)
         {
-            builder.RegisterApi<IMainTabProvider>(TalentTradeTab.Instance);
-            builder.RegisterApi<IClientSettingsPanelProvider>(new LegacyTalentTradeSettingsPanel());
+            builder.RegisterApi<IMainTabProvider>(TalentPresentationAdapter.Wrap(TalentTradeTab.Instance));
+            settingsPanel=new LegacyTalentTradeSettingsPanel();
+            builder.RegisterApi<IClientSettingsPanelProvider>(settingsPanel);
         }
 
         public void Activate(ExtensionHostContext hostContext)
@@ -41,6 +44,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             if (activated) return;
             TalentTradeLocalization.Bind(hostContext.GetRequiredService<IClientLocalizationService>().ForModule(this));
             TalentTradeTheme.Start(hostContext,this);
+            Presentation = TalentPresentationAdapter.Create(hostContext,this);
 
             LegacyTalentTradeRuntime.Session = hostContext.GetRequiredService<IClientSessionContext>();
             LegacyTalentTradeRuntime.Users = hostContext.GetRequiredService<IClientUserDirectory>();
@@ -96,6 +100,10 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         public void Shutdown(ExtensionHostContext hostContext)
         {
+            TalentTradeTab.Instance.StopPresentation();
+            TalentPawnIcons.Stop();
+            settingsPanel?.StopPresentation();
+            var oldPresentation=Presentation; Presentation=null; oldPresentation?.Dispose();
             TalentTradeLocalization.Bind(null);
             TalentTradeTheme.Stop();
             if (!activated) return;

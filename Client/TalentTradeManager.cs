@@ -263,24 +263,20 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                     LegacyTalentTradeRuntime.LogWarning($"【三角洲贸易】RestoreDelistedPawn: No pawn data for listing {listingId}");
                     return;
                 }
+            }
+
+            var component = TalentTradeGameComponent.Current;
+            if (component == null || !component.QueueDelistedPawn(listingId, b64PawnData))
+            {
+                LegacyTalentTradeRuntime.LogWarning("[TalentTrade] Delist return was not queued; original pawn data retained for " + listingId);
+                return;
+            }
+            // The existing save-local return ledger now owns the raw payload before any delivery is attempted.
+            lock (MarketLock)
+            {
                 MarketListings.Remove(listingId);
                 LocalPawnData.Remove(listingId);
             }
-
-            // Untrack from current save
-            if (TalentTradeGameComponent.Current != null)
-            {
-                TalentTradeGameComponent.Current.UntrackListing(listingId);
-            }
-
-            EnqueueMainThread(() =>
-            {
-                Pawn pawn = PawnDeserializer.DeserializeAndSpawn(b64PawnData);
-                if (pawn != null)
-                {
-                    Messages.Message("Phinix_legacyTalentTrade_pawnRestored".Localize(pawn.LabelShortCap), new LookTargets(pawn), MessageTypeDefOf.NeutralEvent, false);
-                }
-            });
         }
 
         /// <summary>
@@ -1817,6 +1813,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         public static DirectTrade GetTrade(string tradeId)
         {
+            if (string.IsNullOrEmpty(tradeId)) return null;
             lock (TradeLock)
             {
                 DirectTrade trade;

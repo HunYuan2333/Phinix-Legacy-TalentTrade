@@ -9,6 +9,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Compatibility/ThemeAdapter.cs" />
+    <Compile Include="Compatibility/PresentationAdapter.cs" />
+    <Compile Include="TalentPresentationView.cs" />
+    <Compile Include="TalentPawnIcons.cs" />
+    <Compile Include="PawnScribeLoadScope.cs" />
+    <Compile Include="TalentCatalogOwners.cs" />
+    <Compile Include="TalentCatalogPresentation.cs" />
+    <Compile Include="TalentProjectionFingerprint.cs" />
+    <Compile Include="TalentSettingsPresentation.cs" />
+    <Compile Include="DirectTradePresentation.cs" />
+    <Compile Include="DirectTradeWindowPresentation.cs" />
     <Compile Include="TalentTradeTheme.cs" />
     <Compile Include="BuiltInLegacyTalentTradeClientExtension.cs" />
     <Compile Include="DefManifestHelper.cs" />

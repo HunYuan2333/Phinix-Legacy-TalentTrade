@@ -10,7 +10,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
     /// <summary>
     /// Rental sub-tab panel: browse rental listings, rent pawns, list pawns for rent.
     /// </summary>
-    public class RentalPanel
+    public partial class RentalPanel
     {
         private const float ROW_HEIGHT = 90f;
         private const float BUTTON_WIDTH = 90f;

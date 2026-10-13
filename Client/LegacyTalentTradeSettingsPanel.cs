@@ -6,6 +6,9 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 {
     internal sealed class LegacyTalentTradeSettingsPanel : IClientSettingsPanelProvider
     {
+        private TalentSettingsWindow modernWindow;
+        internal void StopPresentation(){modernWindow?.Close();modernWindow=null;}
+        private void OpenPresentation(IClientSettingsContext settings){modernWindow?.Close();modernWindow=new TalentSettingsWindow(settings);Find.WindowStack.Add(modernWindow);}
         private float cachedWidth = -1f;
         private object cachedLanguage;
         private string notificationsLabel;
@@ -22,6 +25,8 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         public void DrawSettings(Listing_Standard listing, IClientSettingsContext settings)
         {
+            var host=BuiltInLegacyTalentTradeClientExtension.Presentation;
+            if(host!=null){if(host.Button(listing.GetRect(48f),"Phinix_legacyTalentTrade_uiSettings".Localize()))OpenPresentation(settings);return;}
             using (TalentTradeTheme.BeginDraw()) DrawSettingsContents(listing, settings);
         }
 

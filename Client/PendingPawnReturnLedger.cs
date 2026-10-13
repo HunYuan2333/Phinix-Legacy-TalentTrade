@@ -47,6 +47,15 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         internal Record[] Records { get { return records.Where(r => !r.Returned).ToArray(); } }
 
+        internal bool TryAdd(string id, string data)
+        {
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(data)) return false;
+            var existing = records.Where(r => r.Id == id).ToArray();
+            if (existing.Length > 0) return existing.Length == 1 && !existing[0].Returned && existing[0].Data == data;
+            records.Add(new Record { Id = id, Data = data });
+            return true;
+        }
+
         internal bool TryQueue(Record record)
         {
             if (!records.Contains(record) || record.Returned || record.Queued || record.Uncertain ||

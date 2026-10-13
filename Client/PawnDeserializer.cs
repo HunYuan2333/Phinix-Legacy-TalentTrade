@@ -51,7 +51,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                 {
                     LegacyTalentTradeRuntime.LogWarning("【三角洲贸易】PostProcessPawn failed (pawn still delivered): " + ex);
                 }
-                LegacyTalentTradeRuntime.LogMessage("【三角洲贸易】Pawn 反序列化成功。注意：上方任何 hediff/need 警告是 Scribe 时序导致的预期行为，不影响功能。| Pawn deserialized successfully. Any hediff/need warnings above are expected due to Scribe timing and do not affect functionality.");
+                LegacyTalentTradeRuntime.LogMessage("[TalentTrade] Pawn deserialized; delivery has not yet been confirmed.");
             }
             return pawn;
         }
@@ -69,6 +69,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             }
 
             Pawn pawn = null;
+            using (var scope = new PawnScribeLoadScope())
             try
             {
                 XmlDocument doc = TalentTradeInputLimits.ReadPawnXml(xml);
@@ -109,17 +110,12 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
                 if (pawn != null)
                 {
-                    // Resolve cross-references
-                    Scribe.loader.crossRefs.ResolveAllCrossReferences();
-
-                    // Clean up null hediffs BEFORE post-load init
-                    if (pawn.health != null && pawn.health.hediffSet != null)
-                    {
-                        pawn.health.hediffSet.hediffs.RemoveAll(h => h == null || h.def == null);
-                    }
-
-                    // Run post-load init
-                    Scribe.loader.initer.DoAllPostLoadInits();
+                    // Finalize exactly once while still in LoadingVars. It owns cross-refs and post-load stages.
+                    Scribe.loader.FinalizeLoading();
+                    if (pawn.RaceProps?.Humanlike == true && (pawn.ageTracker == null || pawn.story == null))
+                        throw new InvalidOperationException("Loaded humanlike pawn is missing age/story trackers.");
+                    // Age PostLoadInit may reset its cache after the style tracker ran. Prime it before returning to Playing.
+                    if (pawn.ageTracker != null) { int loadedLifeStage = pawn.ageTracker.CurLifeStageIndex; }
                 }
             }
             catch (Exception ex)
@@ -127,12 +123,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                 LegacyTalentTradeRuntime.LogError("【三角洲贸易】XmlToPawn failed: " + ex);
                 pawn = null;
             }
-            finally
-            {
-                // Always reset Scribe state
-                Scribe.mode = LoadSaveMode.Inactive;
-                Scribe.loader.FinalizeLoading();
-            }
+
 
             return pawn;
         }

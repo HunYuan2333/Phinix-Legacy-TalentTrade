@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>disable</ImplicitUsings><Nullable>disable</Nullable>
+    <ProbeReferences Condition="'$(ProbeReferences)' == ''">../../../Phinix-Rework/Client/ClientExtensionAbstractions/bin/Release</ProbeReferences></PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="CurrentProbe.cs" Condition="'$(Previous)' == 'true'" />
+    <Reference Include="ClientExtensionAbstractions"><HintPath>$(ProbeReferences)/ClientExtensionAbstractions.dll</HintPath></Reference>
+    <Reference Include="Utils"><HintPath>$(ProbeReferences)/Utils.dll</HintPath></Reference>
+    <Reference Include="UserManagement"><HintPath>$(ProbeReferences)/UserManagement.dll</HintPath></Reference>
+    <Reference Include="LegacyTalentTradeExtension"><HintPath>../../Contracts/bin/Release/net472/LegacyTalentTradeExtension.dll</HintPath></Reference>
+    <Reference Include="LegacyTalentTradeExtension.Client"><HintPath>../../Client/bin/Release/net472/LegacyTalentTradeExtension.Client.dll</HintPath></Reference>
+    <Reference Include="Assembly-CSharp"><HintPath>../../../Phinix-Rework/GameDlls/Assembly-CSharp.dll</HintPath></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>../../../Phinix-Rework/GameDlls/UnityEngine.CoreModule.dll</HintPath></Reference>
+    <Reference Include="0Harmony"><HintPath>../../../Phinix-Rework/.nuget/Lib.Harmony.2.3.6/lib/net472/0Harmony.dll</HintPath></Reference>
+  </ItemGroup>
+</Project>

@@ -84,6 +84,17 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             activeListingIds.Add(listingId);
         }
 
+        internal bool QueueDelistedPawn(string listingId, string data)
+        {
+            if (!LegacyTalentTradeRuntime.IsActive || current != this || Verse.Current.Game != owningGame) return false;
+            EnsureReturnLedger();
+            if (!returnLedger.TryAdd(listingId, data)) return false;
+            UntrackListing(listingId);
+            BackupActiveListings();
+            ReturnPendingPawns();
+            return true;
+        }
+
         public void UntrackListing(string listingId)
         {
             activeListingIds.Remove(listingId);

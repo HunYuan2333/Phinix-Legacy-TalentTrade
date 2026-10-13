@@ -12,7 +12,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
     /// <summary>
     /// Direct trade sub-tab: online users list + active trades list.
     /// </summary>
-    public class DirectTradePanel
+    public partial class DirectTradePanel
     {
         private const float ROW_HEIGHT = 36f;
         private const float BUTTON_WIDTH = 80f;
@@ -60,6 +60,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         public void Draw(Rect rect)
         {
+            if(BuiltInLegacyTalentTradeClientExtension.Presentation!=null){ViewOpened();ViewUpdate();presentationView?.Draw(rect);return;}
             using (TalentTradeTheme.BeginDraw()) DrawContents(rect);
         }
 

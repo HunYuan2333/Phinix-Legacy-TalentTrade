@@ -11,7 +11,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
     /// <summary>
     /// Market sub-tab panel: browse listings, buy pawns, list pawns for sale.
     /// </summary>
-    public class MarketPanel
+    public partial class MarketPanel
     {
         private const float ROW_HEIGHT = 80f;
         private const float BUTTON_WIDTH = 90f;

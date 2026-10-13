@@ -10,7 +10,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
     /// <summary>
     /// Trade negotiation window: split view with my offer vs their offer.
     /// </summary>
-    public class DirectTradeWindow : Window
+    public partial class DirectTradeWindow : Window
     {
         private const float SPACING = 6f;
         private const float ROW_HEIGHT = 28f;
@@ -57,10 +57,12 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                 silverBuffer = myOffer.SilverAmount.ToString();
                 silverValue = myOffer.SilverAmount;
             }
+            StartPresentation();
         }
 
         public override void DoWindowContents(Rect inRect)
         {
+            if(modernView!=null){UpdatePresentation();modernView?.Draw(inRect);return;}
             using (TalentTradeTheme.BeginDraw()) DrawContents(inRect);
         }
 
@@ -112,7 +114,10 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         {
             base.WindowUpdate();
             ClampToScreen();
+            UpdatePresentation();
         }
+
+        public override void PostClose() { var old=modernView;modernView=null;old?.Dispose();availablePawns.Clear();offeredPawns.Clear();presentationGame=null;base.PostClose(); }
 
         private void ClampToScreen()
         {
@@ -265,8 +270,10 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             string pawnLabel = TradeablePawnUtility.GetLabel(pawn);
             string raceDefName = pawn.def != null ? pawn.def.defName : "Unknown";
 
+            var requestView=modernView; var requestGame=Current.Game; var requestTrade=trade;
             TalentTradeManager.RequestRaceCheck(pawn, targetUuid, delegate(TransferReport report)
             {
+                if(requestView!=null && (requestView.IsClosed || !ReferenceEquals(requestGame,Current.Game) || !ReferenceEquals(requestTrade,TalentTradeManager.GetTrade(requestTrade.Id)) || requestTrade.State==DirectTradeState.Cancelled || requestTrade.State==DirectTradeState.Completed || requestTrade.State==DirectTradeState.Executing)) return;
                 if (report != null && report.HasMissing)
                 {
                     string message = "Phinix_legacyTalentTrade_raceIncompatible".Localize(pawnLabel, raceDefName);
@@ -274,11 +281,13 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                     {
                         message += "\n\n" + report.ToSummary();
                     }
-                    Find.WindowStack.Add(new Dialog_MessageBox(message));
+                    if(requestView!=null){modernNotice=message;modernView?.Invalidate();}
+                    else Find.WindowStack.Add(new Dialog_MessageBox(message));
                     return;
                 }
 
                 AddPawnToOffer(pawn, isInitiator);
+                modernView?.Invalidate();
             });
         }
 

@@ -3,7 +3,8 @@
   "locale": "en-US",
   "display": {
     "name": "Talent trade",
-    "summary": "List, trade and rent pawns using the legacy talent market."
+    "summary": "List, trade and rent pawns using the legacy talent market.",
+    "changelog": "1.2.0: Unified trade, market, rental and settings pages; fixes for navigation, unit icons and delisting returns."
   },
   "strings": {
     "Phinix_legacyTalentTrade_tab": "Talent Trade",
@@ -119,6 +120,35 @@
     "Phinix_legacyTalentTrade_versionText": "Talent Trade mod loaded, current version: {0}\n\nAccess trading features through the Phinix chat interface.",
     "Phinix_legacyTalentTrade_listingExpired": "Listing expired: {0} has been returned via drop pod.",
     "Phinix_legacyTalentTrade_purchaseRejected": "Cannot start this purchase. Refresh the listings; an existing request may still be awaiting confirmation.",
-    "Phinix_legacyTalentTrade_purchaseUnknown": "The purchase is still awaiting confirmation. Its request is retained; do not assume failure or buy it again."
+    "Phinix_legacyTalentTrade_purchaseUnknown": "The purchase result is unconfirmed. Do not buy it again.",
+    "Phinix_legacyTalentTrade_uiSelectUser": "Select a member to start a trade.",
+    "Phinix_legacyTalentTrade_uiNoUsers": "No other online members.",
+    "Phinix_legacyTalentTrade_uiCloseKeepsTrade": "Closing the window does not withdraw submitted actions.",
+    "Phinix_legacyTalentTrade_uiCancelTrade": "Cancel this trade? Wait for the cancellation result and return of held units.",
+    "Phinix_legacyTalentTrade_uiBack": "Back",
+    "Phinix_legacyTalentTrade_uiNotEditable": "This trade state cannot be edited.",
+    "Phinix_legacyTalentTrade_uiSilverInvalid": "Enter a non-negative integer amount.",
+    "Phinix_legacyTalentTrade_uiSelectPawn": "Select a unit.",
+    "Phinix_legacyTalentTrade_uiNotLocked": "Not locked",
+    "Phinix_legacyTalentTrade_uiPublishedSilver": "Submitted silver",
+    "Phinix_legacyTalentTrade_uiEmptyOffer": "No units in this offer.",
+    "Phinix_legacyTalentTrade_uiBrowse": "All",
+    "Phinix_legacyTalentTrade_uiSearch": "Search units or publisher",
+    "Phinix_legacyTalentTrade_uiListings": "Listings",
+    "Phinix_legacyTalentTrade_uiSelectListing": "Select a listing to view details",
+    "Phinix_legacyTalentTrade_uiRequestPending": "Check the latest list and the units or silver you receive.",
+    "Phinix_legacyTalentTrade_uiCleanupRequested": "Cleanup does not return units. Check the list.",
+    "Phinix_legacyTalentTrade_uiCleanupWarning": "Force cleanup deletes all your active listings and local backups without returning units. Units may be permanently lost. Use only when recovery is impossible. Continue?",
+    "Phinix_legacyTalentTrade_uiNumberInvalid": "Prices and days must be positive integers; deposit may be zero. Values cannot exceed 2147483647.",
+    "Phinix_legacyTalentTrade_uiPublishConfirm": "List this unit? It will temporarily leave the map. Closing the window does not delist it.",
+    "Phinix_legacyTalentTrade_uiListingRequested": "Listing requested. Wait for the list to update.",
+    "Phinix_legacyTalentTrade_uiOperationIncomplete": "The action did not complete. Check the error message; details are available in the log.",
+    "Phinix_legacyTalentTrade_uiDelistConfirm": "Delist this unit? Wait for it to return to the map.",
+    "Phinix_legacyTalentTrade_uiReturnConfirm": "Return this rented unit? Wait for the return result and deposit settlement.",
+    "Phinix_legacyTalentTrade_uiSettings": "Open talent trade settings",
+    "Phinix_legacyTalentTrade_uiMaintenance": "Maintenance",
+    "Phinix_legacyTalentTrade_uiRetryView": "Retry",
+    "Phinix_legacyTalentTrade_uiViewError": "This page is temporarily unavailable",
+    "Phinix_legacyTalentTrade_uiViewErrorHelp": "Switch to another page or try again. Switching pages does not cancel a trade."
   }
 }

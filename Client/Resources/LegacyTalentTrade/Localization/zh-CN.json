@@ -3,7 +3,8 @@
   "locale": "zh-CN",
   "display": {
     "name": "人才贸易",
-    "summary": "通过旧协议人才市场挂牌、交易和租赁人物。"
+    "summary": "通过旧协议人才市场挂牌、交易和租赁人物。",
+    "changelog": "1.2.0：统一交易、市场、租赁与设置页面；修复分支切换、人物图标和下架返还。"
   },
   "strings": {
     "Phinix_legacyTalentTrade_tab": "人才贸易",
@@ -119,6 +120,35 @@
     "Phinix_legacyTalentTrade_versionText": "人才贸易 mod 已加载，当前版本：{0}\n\n通过 Phinix 聊天界面访问交易功能。",
     "Phinix_legacyTalentTrade_listingExpired": "挂牌超时：{0} 已通过空投返还。",
     "Phinix_legacyTalentTrade_purchaseRejected": "无法开始购买。请刷新挂牌列表；已有请求可能仍在等待确认。",
-    "Phinix_legacyTalentTrade_purchaseUnknown": "购买仍在等待确认，已保留请求。请勿认定失败或重复购买。"
+    "Phinix_legacyTalentTrade_purchaseUnknown": "购买结果尚未确认，请勿重复购买。",
+    "Phinix_legacyTalentTrade_uiSelectUser": "选择成员以发起交易。",
+    "Phinix_legacyTalentTrade_uiNoUsers": "当前没有其他在线成员。",
+    "Phinix_legacyTalentTrade_uiCloseKeepsTrade": "关闭窗口不会撤销已提交的操作。",
+    "Phinix_legacyTalentTrade_uiCancelTrade": "取消这笔交易？请等待取消结果和单位返还。",
+    "Phinix_legacyTalentTrade_uiBack": "返回",
+    "Phinix_legacyTalentTrade_uiNotEditable": "当前交易状态不允许编辑。",
+    "Phinix_legacyTalentTrade_uiSilverInvalid": "请输入非负整数白银数量。",
+    "Phinix_legacyTalentTrade_uiSelectPawn": "请选择单位。",
+    "Phinix_legacyTalentTrade_uiNotLocked": "尚未锁定",
+    "Phinix_legacyTalentTrade_uiPublishedSilver": "已提交白银",
+    "Phinix_legacyTalentTrade_uiEmptyOffer": "报价中没有单位。",
+    "Phinix_legacyTalentTrade_uiBrowse": "全部",
+    "Phinix_legacyTalentTrade_uiSearch": "搜索单位或发布者",
+    "Phinix_legacyTalentTrade_uiListings": "目录",
+    "Phinix_legacyTalentTrade_uiSelectListing": "选择挂牌查看详情",
+    "Phinix_legacyTalentTrade_uiRequestPending": "请查看最新列表，并核对收到的单位和白银。",
+    "Phinix_legacyTalentTrade_uiCleanupRequested": "清理操作不会返还单位，请核对列表。",
+    "Phinix_legacyTalentTrade_uiCleanupWarning": "强制清理会删除你全部在售记录和本地备份，不会归还单位，可能造成永久丢失。仅在无法恢复时使用。继续？",
+    "Phinix_legacyTalentTrade_uiNumberInvalid": "价格和天数须为正整数，押金可为零；数值不能超过 2147483647。",
+    "Phinix_legacyTalentTrade_uiPublishConfirm": "上架所选单位？上架后，单位将暂时离开地图。关闭窗口不会下架。",
+    "Phinix_legacyTalentTrade_uiListingRequested": "上架请求已提交，请等待列表更新。",
+    "Phinix_legacyTalentTrade_uiOperationIncomplete": "操作未完成，请查看错误提示；详情可在日志中查看。",
+    "Phinix_legacyTalentTrade_uiDelistConfirm": "下架所选单位？请等待单位返回地图。",
+    "Phinix_legacyTalentTrade_uiReturnConfirm": "归还所选租赁单位？请等待归还结果和押金结算。",
+    "Phinix_legacyTalentTrade_uiSettings": "打开人才贸易设置",
+    "Phinix_legacyTalentTrade_uiMaintenance": "维护操作",
+    "Phinix_legacyTalentTrade_uiRetryView": "重试",
+    "Phinix_legacyTalentTrade_uiViewError": "此页面暂时无法打开",
+    "Phinix_legacyTalentTrade_uiViewErrorHelp": "可以切换其他页面或重试。切换页面不会取消交易。"
   }
 }

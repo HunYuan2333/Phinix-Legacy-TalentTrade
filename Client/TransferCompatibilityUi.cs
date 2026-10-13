@@ -29,6 +29,16 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             IEnumerable<string> manifestData,
             Action onAccepted)
         {
+            if(!BuildConfirmation(actionText,label,manifestData,out string confirmText))
+            {Find.WindowStack.Add(new Dialog_MessageBox(confirmText));return;}
+            Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(
+                confirmText,
+                onAccepted,
+                destructive: false));
+        }
+
+        internal static bool BuildConfirmation(string actionText,string label,IEnumerable<string> manifestData,out string confirmText)
+        {
             bool hasMetadata = false;
             bool fatal = false;
             TransferReport combined = new TransferReport();
@@ -55,11 +65,11 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                 string text = "Phinix_legacyTalentTrade_compatibilityFatal".Localize(label);
                 if (combined.Missing.Count > 0)
                     text += "\n\n" + string.Join("\n", Unique(combined.Missing));
-                Find.WindowStack.Add(new Dialog_MessageBox(text));
-                return;
+                confirmText = text;
+                return false;
             }
 
-            string confirmText = actionText;
+            confirmText = actionText;
             if (!hasMetadata)
             {
                 confirmText += "\n\n" + "Phinix_legacyTalentTrade_compatibilityUnknown".Localize();
@@ -73,10 +83,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                 confirmText += "\n\n" + warning;
             }
 
-            Find.WindowStack.Add(Dialog_MessageBox.CreateConfirmation(
-                confirmText,
-                onAccepted,
-                destructive: false));
+            return true;
         }
 
         private static IEnumerable<string> Unique(IEnumerable<string> values)
