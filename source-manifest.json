@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packageId": "phinix.legacy.talent-trade",
   "files": {
-    ".github/workflows/release.yml": "f1eb1066c3dc468b16e6c1f933c8e13c6d8cdd77d80de8e9a18f8d4d7aef935c",
+    ".github/workflows/release.yml": "05d14b338bf23d51ba6dd1b08f46ecc876be74c65835d00d00f6fd6690eab679",
     ".gitignore": "6dd1d0eb2c558b1f0308aa6cbfce8e904549d8b2c8efc390d92aca3d1f45641a",
     "AGENTS.md": "308eb4bb161e6d13fff1a9791705141386f04dcfb138cc06ebf5fb7c2e5437b0",
     "Client/BuiltInLegacyTalentTradeClientExtension.cs": "388e9a0bdc13c9db9c75775346c451f75bf190e5480706fe43983ecbf3163c53",
