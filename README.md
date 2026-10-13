@@ -113,3 +113,13 @@ Never commit or redistribute RimWorld, Harmony, or host assemblies in the candid
 ## T4 local theme integration
 
 The unpublished 1.1.2 candidate keeps one binary for client APIs 1.9/current. A private theme adapter binds ordinary current theme registration and immutable palettes; 1.9 uses plugin defaults. UI/business code has no version branches. Online publication remains deferred. See Client-Compatibility.md; game acceptance is pending.
+
+Publication requires a fixed source commit, an immutable package, a reviewed index Issue and the maintainer's `plugin-approved` label. RedPacket pending-send/restart reconciliation and TalentTrade late GameComponent loading/missing-package resaving are release gates. Until these are passed, candidates are not admitted to the official catalog and bundled DLLs remain.
+
+## main/dev and official releases
+
+Develop on dev; it triggers no Actions. Every accepted push to main reserves the next patch version in the configured major/minor series, builds against fixed client/Common source and private compile-only references, then publishes an official GitHub Release with the plugin ZIP, SHA256SUMS and source/build summary. Retrying the same commit reuses its reserved version; failed builds leave an unpublished draft for retry and never replace published bytes. Parallel pushes reserve distinct versions without canceling pending builds.
+
+Maintainers configure BUILD_REFERENCES_TOKEN as a repository secret, with Contents:Read only on the private compile-reference repository named in ci/config.json. This is a maintainer CI setup; third-party authors supply their own licensed references. No game/host/Harmony DLL is uploaded in public artifacts. Assembly identity versions remain independently controlled by source; the automatically assigned package release version is passed to pack.py --version.
+
+Merging into main means the author has accepted publication. A GitHub Release does not bypass Index admission/source-update policy or prove game acceptance. Test changes on dev before merging. Fixed host/reference inputs are maintained explicitly in ci/config.json. Do not overwrite released ZIPs or expose the reference token.

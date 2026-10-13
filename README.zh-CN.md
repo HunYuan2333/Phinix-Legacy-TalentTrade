@@ -113,3 +113,13 @@ python3 pack.py \
 ## T4 本地主题接入
 
 1.1.2 本地候选新增内部主题 adapter，单包继续支持 1.9/当前客户端。当前客户端可编辑模块配色，1.9 使用默认样式。配色与业务状态分开，未修改在线发布版本；详见 Client-Compatibility.md。
+
+正规发布需要固定源码提交、不可变 ZIP、索引申请 Issue 和维护者亲自添加 `plugin-approved`。红包未决发送及重启核对、人才晚加载组件及缺包重新保存仍是发行门槛；通过前，候选包不上正式目录，主体保留内置 DLL。
+
+## main/dev 与正式发行
+
+在 dev 开发，该分支不触发 Actions。每次确认后的 main 提交，会在配置的主/次版本系列中预留下一个补丁版本，使用固定客户端/Common 源码与私有编译引用构建，然后发布含插件 ZIP、SHA256SUMS 和源码/构建摘要的正式 GitHub Release。同一提交重跑复用已预留版本；构建失败留下未公开的草稿供重试，不替换已发布字节。并行提交预留不同版本，不取消等待中的构建。
+
+维护者在 Repository secrets 配置 BUILD_REFERENCES_TOKEN，仅授予 ci/config.json 指定的私有引用仓库 Contents:Read 权限。这是维护者的 CI 配置；第三方作者应提供自己的合法编译引用。公开产物不含游戏、宿主或 Harmony DLL。程序集身份版本由源码独立控制；自动分配的包发行版本通过 pack.py --version 传入。
+
+合入 main 表示作者确认发布。GitHub Release 不跳过 Index 准入/来源更新策略，也不代表游戏验收通过；修改应先在 dev 测试。宿主和引用的固定输入通过 ci/config.json 显式维护。不要覆盖已发布 ZIP 或暴露引用 token。
