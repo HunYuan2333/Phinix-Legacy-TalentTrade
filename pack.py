@@ -14,7 +14,6 @@ def main():
     parser.add_argument('--harmony-references', type=Path)
     parser.add_argument('--framework-references', type=Path, help='Optional .NET Framework reference identities; never bundled')
     parser.add_argument('--packager', type=Path, required=True, help='ManagedPackageTool.dll, built from trusted Phinix source')
-    parser.add_argument('--version', help='Local package version; defaults to publication.json')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--version', help='CI release version; defaults to publication.json')
     parser.add_argument('--bundle-output', type=Path)

@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "packageId": "phinix.legacy.talent-trade",
   "files": {
-    ".github/workflows/release.yml": "05d14b338bf23d51ba6dd1b08f46ecc876be74c65835d00d00f6fd6690eab679",
+    ".github/workflows/release.yml": "bb2358d46b0f12fcd926c3a93367e076e647d34202102dfde64c30c36fabdb29",
     ".gitignore": "6dd1d0eb2c558b1f0308aa6cbfce8e904549d8b2c8efc390d92aca3d1f45641a",
-    "AGENTS.md": "308eb4bb161e6d13fff1a9791705141386f04dcfb138cc06ebf5fb7c2e5437b0",
+    "AGENTS.md": "e747e1df2a16e8763799f1ce8478c07dd199d1ef297e446feb83d5f2be2d7180",
     "Client/BuiltInLegacyTalentTradeClientExtension.cs": "388e9a0bdc13c9db9c75775346c451f75bf190e5480706fe43983ecbf3163c53",
     "Client/Compatibility/PresentationAdapter.cs": "277bf8183ff6e04f77a0c9a6fc8101c30bf675dda1ada0f22e8f8c33dfd3987c",
     "Client/Compatibility/ThemeAdapter.cs": "9d98e9e6cdb15f65c9c4bd1d7129d421f06e3a5e741167aa855204fdffc25402",
@@ -67,14 +67,14 @@
     "Tests/TalentPresentationRuntimeTests/TalentPresentationRuntimeTests.csproj": "d05ce0a29193a3f068ecdf1129d93f5c99549aafce33059b74d19dafeae3e547",
     "check-source.py": "f1fd2bb90e367620ac622af4ad96edc6e24e20d977731755c4e8b2832919370e",
     "ci/INDEX-NOTIFICATION.md": "a64a05fee2bd8dbd5cec1088a19ae1b39b69586681becc1f6f0d80aa370b3784",
-    "ci/build.py": "1ebac1fdb80df4bf2a45c0e1dd71172d19b4699c195c8bbbc954158ce7016cec",
-    "ci/config.json": "7a8ef6cd002d719b015d3d2072197ffe86e8bd94e66520a35386d903465c5176",
+    "ci/build.py": "4aedeff97388123952828523f6741ddd6fa5a0768aa2d016eb6f68968e0c2f46",
+    "ci/config.json": "7c45d6438ba26dc872ff3f1d99002b6c60f7dfef85fd6201e1384158feaadf95",
     "ci/notify_index.py": "895680edf54f3ae2bfe1e139421d500725ba71c9d30d48437829377acfea7d9a",
     "ci/publish.py": "196e449c9263f368330c3eef2bb064eaff7e7e9b33c33e56427cb2c834480ce1",
     "ci/release.py": "c0aaa06f1b07ceef640c57510f76941d13c08557aceb1a0128c6994fb3f6b169",
     "ci/tests/test_notify_index.py": "2954ce9110f369002cf1f371cc7b454684b92b4380def8e24c94d7a391253b8b",
-    "ci/tests/test_release_flow.py": "0d6a3e349fe2a6bca06249a43f7bc967e233e79e47943d4cb4a3f2a2815abf42",
-    "pack.py": "fd4b08c3c7e5f143bc5dfed920a868837a080d2d3351369001f663f361b88744",
+    "ci/tests/test_release_flow.py": "e3452e0cc720020f00e9330eb552af88e9a99b9a47852ec769179bd42c5b3985",
+    "pack.py": "d4f996857f8affceb2b9827a5df5779afdfd1dbfc67b094f4931cccde3c019ca",
     "publication.json": "6190b89642a257fcf75aeb5892acddf8bd37e26969c93ff17e14e22285542a56"
   }
 }
