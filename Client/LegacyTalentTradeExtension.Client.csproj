@@ -98,6 +98,7 @@
     <ProjectReference Include="../Contracts/LegacyTalentTradeExtension.csproj">
       <Private>false</Private>
     </ProjectReference>
+    <Reference Include="ClientPresentation.Contracts"><HintPath>$(PhinixPackage)/Common/Assemblies/09-ClientPresentation.Contracts.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="ClientExtensionAbstractions">
       <HintPath>$(PhinixPackage)/Common/Assemblies/10-ClientExtensionAbstractions.dll</HintPath>
       <Private>false</Private>

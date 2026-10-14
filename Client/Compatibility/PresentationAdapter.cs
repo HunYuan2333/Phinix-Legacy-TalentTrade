@@ -17,16 +17,16 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         internal static IMainTabProvider Wrap(TalentTradeTab tab)
         {
             Type wrapper=typeof(IClientSessionContext).Assembly.GetType("PhinixClient.Framework.ClientPresentationMainTab",false);
-            if(wrapper==null){if(typeof(IClientSessionContext).Assembly.GetType("PhinixClient.Framework.IClientPresentationService",false)!=null)throw new InvalidOperationException("CurrentPresentationProviderAdapterMissing");return tab;}
+            if(wrapper==null){if(typeof(IClientPresentationService).Assembly.GetType("PhinixClient.Framework.IClientPresentationService",false)!=null)throw new InvalidOperationException("CurrentPresentationProviderAdapterMissing");return tab;}
             return (IMainTabProvider)Activator.CreateInstance(wrapper,new object[]{tab,(Action)tab.ViewOpened,(Action)tab.ViewUpdate,(Action)tab.ViewClosed,"talent-trade"});
         }
         internal static TalentHostPresentation Create(ExtensionHostContext host,IPhinixExtensionModule owner)
         {
-            var sdk=typeof(IClientSessionContext).Assembly;
+            var sdk=typeof(IClientPresentationService).Assembly;
             Type renderer=sdk.GetType("PhinixClient.Framework.IClientPresentationService",false);
             if(renderer==null)
             {
-                string version=(string)sdk.GetType("PhinixClient.Framework.ClientAbstractionsCompatibility",true).GetField("Version").GetRawConstantValue();
+                string version=(string)typeof(IClientSessionContext).Assembly.GetType("PhinixClient.Framework.ClientAbstractionsCompatibility",true).GetField("Version").GetRawConstantValue();
                 if(new Version(version).Major>=2)throw new InvalidOperationException("CurrentPresentationApiMissing");
                 return null;
             }
@@ -57,7 +57,8 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         private readonly Assembly sdk;
         private readonly IPhinixExtensionModule owner;
         private readonly object renderer,points,scope,point,theme;
-        private readonly Type scopeType,sessionType,pointType;
+        private readonly Type scopeType,sessionType,pointType,boundsType;
+        private readonly MethodInfo draw;
         internal readonly Dictionary<string,Func<TalentPresentationActionContext,IEnumerable<HostAction>>> Sources=new Dictionary<string,Func<TalentPresentationActionContext,IEnumerable<HostAction>>>();
         private bool disposed;
         internal string OwnerId=>owner.ExtensionId;
@@ -67,10 +68,14 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         internal TalentHostPresentation(ExtensionHostContext host,IPhinixExtensionModule owner,Assembly sdk)
         {
             this.owner=owner;this.sdk=sdk;
-            if (Type("ClientPresentationRow").GetMethod("WithIconSource") == null)
-                throw new InvalidOperationException("Talent presentation requires the Host borrowed texture-source API (B41 or newer).");
+            if (Type("ClientPresentationRow").GetMethod("WithImage") == null)
+                throw new InvalidOperationException("Talent presentation requires the current Host borrowed image API.");
             renderer=Resolve(host,Type("IClientPresentationService"));points=Resolve(host,Type("IClientExtensionPointService"));theme=Resolve(host,Type("IClientTheme"));
             scopeType=Type("IClientExtensionPointScope");sessionType=Type("IClientPresentationSession");pointType=Type("IClientActionPoint`1").MakeGenericType(typeof(TalentPresentationActionContext));
+            boundsType=Type("ClientPresentationBounds");
+            draw=sessionType.GetMethod("Draw",new[]{boundsType});
+            if(draw==null || boundsType.GetConstructor(new[]{typeof(float),typeof(float),typeof(float),typeof(float)})==null)
+                throw new InvalidOperationException("The selected Host lacks the current presentation bounds contract.");
             scope=Call(Type("IClientExtensionPointService").GetMethod("ForModule"),points,owner);
             try
             {
@@ -99,7 +104,8 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         internal object Open(string pageId)=>Call(Type("IClientPresentationService").GetMethod("Open"),renderer,owner,pageId);
         internal bool Closed(object view)=>view==null||(bool)Get(view,"IsClosed");
         internal object LastResult(object view)=>Get(view,"LastActionResult");
-        internal void Draw(object view,Rect rect)=>Call(sessionType.GetMethod("Draw"),view,rect);
+        internal void Draw(object view,Rect rect)=>Call(draw,view,
+            Activator.CreateInstance(boundsType,rect.x,rect.y,rect.width,rect.height));
         internal bool Input(object view,out HostInput input)
         {
             object[] args={null};bool read=(bool)Call(sessionType.GetMethod("TryDequeueInput"),view,args);
@@ -138,12 +144,14 @@ namespace Phinix.LegacyTalentTradeExtension.Client
                 object row=New("ClientPresentationRow",new Dictionary<string,object>{{"id",r.Id},{"label",r.Label},{"detail",r.Detail},{"disabledReason",r.Disabled},{"colorKey",r.Color}});
                 if(r.Badge!=null)
                 {
-                    object badge=New("ClientPresentationBadge",new Dictionary<string,object>{{"id","source"},{"label",r.Badge},{"icon",r.Icon}});
+                    object badge=New("ClientPresentationBadge",new Dictionary<string,object>{{"id","source"},{"label",r.Badge},{"image",r.Icon==null?null:Call(Type("ClientTextureImage").GetMethod("FromTexture"),null,r.Icon)}});
                     if(r.BadgeColor!=null)badge=Call(badge.GetType().GetMethod("WithColor"),badge,r.BadgeColor);
                     row=Call(row.GetType().GetMethod("WithBadges"),row,ArrayOf("ClientPresentationBadge",new[]{badge}));
                 }
-                if(r.IconSource!=null)row=Call(row.GetType().GetMethod("WithIconSource"),row,r.IconSource);
-                else if(r.Icon!=null && r.Badge==null)row=Call(row.GetType().GetMethod("WithIcon"),row,r.Icon);
+                if(r.IconSource!=null)row=Call(row.GetType().GetMethod("WithImage"),row,
+                    Call(Type("ClientTextureImage").GetMethod("FromSource"),null,r.IconSource,(Func<bool>)(()=>!disposed),null,Activator.CreateInstance(Type("ClientPresentationImageSize"))));
+                else if(r.Icon!=null && r.Badge==null)row=Call(row.GetType().GetMethod("WithImage"),row,
+                    Call(Type("ClientTextureImage").GetMethod("FromTexture"),null,r.Icon));
                 return row;
             });
             object list=New("ClientPresentationList",new Dictionary<string,object>{{"id",id},{"rows",ArrayOf("ClientPresentationRow",models)},{"emptyText",empty},{"selectedId",selected}});
@@ -177,7 +185,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             Call(sessionType.GetMethod("Publish"),view,page,batch?.Owned,current);
             if(batch!=null)batch.Owned=null; // successful transfer only
         }
-        private Type Type(string name)=>sdk.GetType("PhinixClient.Framework."+name,true);
+        private Type Type(string name)=>(name == "ClientTextureImage" || name == "ClientWidgets" ? typeof(IClientSessionContext).Assembly : sdk).GetType("PhinixClient.Framework."+name,true);
         private object New(string name,Dictionary<string,object> supplied)
         {
             var constructor=Type(name).GetConstructors().FirstOrDefault(c=>supplied.Keys.All(k=>c.GetParameters().Any(p=>p.Name==k))&&c.GetParameters().All(p=>supplied.ContainsKey(p.Name)||p.IsOptional));

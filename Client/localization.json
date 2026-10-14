@@ -4,13 +4,13 @@
   "resources": [
     {
       "path": "Resources/LegacyTalentTrade/Localization/en-US.json",
-      "length": 11877,
-      "sha256": "a4d59fdb778b1e56c627d108e39b0f6101248c3d246cc319eee36256e2971e92"
+      "length": 12033,
+      "sha256": "b4db5e0b770eb5d85dfd7b51fc588f3042ce0585c5e45394935b238593182019"
     },
     {
       "path": "Resources/LegacyTalentTrade/Localization/zh-CN.json",
-      "length": 11681,
-      "sha256": "c16e070b0470f8eda41b580a9755dec73248dc85deb8f6a0ee8eb0c4c61d4480"
+      "length": 11816,
+      "sha256": "6a88897aae671944a54d91173cee7ed9b85952451168cf1768b3a2c05f445fa5"
     }
   ],
   "localization": {

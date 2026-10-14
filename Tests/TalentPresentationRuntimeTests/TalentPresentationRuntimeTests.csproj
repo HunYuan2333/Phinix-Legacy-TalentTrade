@@ -3,6 +3,7 @@
     <ProbeReferences Condition="'$(ProbeReferences)' == ''">../../../Phinix-Rework/Client/ClientExtensionAbstractions/bin/Release</ProbeReferences></PropertyGroup>
   <ItemGroup>
     <Compile Remove="CurrentProbe.cs" Condition="'$(Previous)' == 'true'" />
+    <Reference Include="ClientPresentation.Contracts"><HintPath>../../../Phinix-Rework/Client/PresentationContracts/bin/Release/net472/ClientPresentation.Contracts.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="ClientExtensionAbstractions"><HintPath>$(ProbeReferences)/ClientExtensionAbstractions.dll</HintPath></Reference>
     <Reference Include="Utils"><HintPath>$(ProbeReferences)/Utils.dll</HintPath></Reference>
     <Reference Include="UserManagement"><HintPath>$(ProbeReferences)/UserManagement.dll</HintPath></Reference>

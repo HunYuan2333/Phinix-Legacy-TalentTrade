@@ -3,7 +3,7 @@
   "locale": "en-US",
   "display": {
     "name": "Talent trade",
-    "summary": "List, trade and rent pawns using the legacy talent market.",
+    "summary": "List, trade and rent pawns using the legacy talent market. Before updating this plugin, update the Phinix Rework main mod on Steam to version 0.10.1 or later. Wait for the download to finish, then restart the game.",
     "changelog": "1.2.0: Unified trade, market, rental and settings pages; fixes for navigation, unit icons and delisting returns."
   },
   "strings": {

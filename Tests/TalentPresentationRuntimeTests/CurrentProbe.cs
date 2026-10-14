@@ -12,6 +12,32 @@ using Utils.Framework;
 internal static class CurrentProbe
 {
     private const BindingFlags Private=BindingFlags.Instance|BindingFlags.NonPublic;
+    private sealed class ThemeRegistry : IClientThemeRegistry, IClientThemeRegistration
+    {
+        internal int Colors, Commits, Releases;
+        internal ClientRgba Registered;
+        public IClientThemeRegistration RegisterModule(IPhinixExtensionModule module, string keyNamespace=null, string ownerLabel=null) => this;
+        public void RegisterColor(string key, ClientRgba value, string label=null, string fallbackKey=null, string group=null, string description=null) { Colors++; Registered=value; }
+        public void RegisterFloat(string key,float value,float minimum=0,float maximum=1,string label=null,string group=null,string description=null) { }
+        public void Commit() { Commits++; }
+        public void Dispose() { Releases++; }
+    }
+    private static void RunThemeBinding(Assembly candidate, ExtensionHostContext host, Module module)
+    {
+        var registry=new ThemeRegistry();host.AddService<IClientThemeRegistry>(registry);
+        var definitionType=candidate.GetTypes().Single(t=>t.Name=="PluginColor");
+        var definition=Activator.CreateInstance(definitionType,Private,null,new object[]{"probe.color",new Color(.7f,.6f,.5f,1),"Probe",null},null);
+        var definitions=Array.CreateInstance(definitionType,1);definitions.SetValue(definition,0);
+        var adapter=candidate.GetTypes().Single(t=>t.Name=="PluginThemeAdapter");
+        var source=adapter.GetMethod("Create",BindingFlags.Static|BindingFlags.NonPublic).Invoke(null,new object[]{host,module,"probe","Probe",definitions,new Dictionary<string,Color>{{"probe.color",Color.white}}});
+        Program.Check(registry.Colors==1 && registry.Commits==1 && registry.Registered.Red==.7f,"Actual plugin theme adapter registers through the neutral contract assembly");
+        var palette=source.GetType().GetMethod("Capture",BindingFlags.Instance|BindingFlags.Public).Invoke(source,null);
+        var color=(Color)palette.GetType().GetProperty("Item",Private).GetValue(palette,new object[]{"probe.color"});
+        Program.Check(color.r==.2f && color.g==.3f && color.b==.4f,"Actual plugin binds neutral reader and shared game color bridge across assemblies");
+        ((IDisposable)source).Dispose();((IDisposable)source).Dispose();
+        Program.Check(registry.Releases==1,"Actual split theme binding releases the owned registration once");
+    }
+
     private static object Call(object obj,string name,params object[] args)=>obj.GetType().GetMethod(name,Private).Invoke(obj,args);
     private static object Get(object obj,string name)=>obj.GetType().GetField(name,Private).GetValue(obj);
     private static void Set(object obj,string name,object value)=>obj.GetType().GetField(name,Private).SetValue(obj,value);
@@ -29,8 +55,9 @@ internal static class CurrentProbe
         try{bad.ViewOpened();}catch(InvalidOperationException){}bad.ViewClosed();Program.Check(failedCleanup==1,"Failed open releases the partially opened owner exactly once");
         var host=new ExtensionHostContext();var services=new Services();var module=new Module();
         host.AddService<IClientPresentationService>(services);host.AddService<IClientExtensionPointService>(services);host.AddService<IClientTheme>(services);
+        RunThemeBinding(candidate, host, module);
         Type bridgeType=candidate.GetType("Phinix.LegacyTalentTradeExtension.Client.TalentHostPresentation",true);
-        var bridge=Activator.CreateInstance(bridgeType,Private,null,new object[]{host,module,typeof(IClientSessionContext).Assembly},null);
+        var bridge=Activator.CreateInstance(bridgeType,Private,null,new object[]{host,module,typeof(IClientPresentationService).Assembly},null);
         Program.Check(services.Definitions==1&&services.PointId==TalentPresentationActionContext.PointId,"Adapter defines the ordinary public point once");
         Program.Check((long)bridgeType.GetProperty("ThemeVersion",Private).GetValue(bridge)==7,"Adapter reads borrowed Host theme version");
         var actionType=candidate.GetType("Phinix.LegacyTalentTradeExtension.Client.HostAction",true);int invoked=0;
@@ -58,7 +85,7 @@ internal static class CurrentProbe
         int textureCalls=0;object dynamicRow=Activator.CreateInstance(rowType,Private,null,new object[]{"portrait","Portrait","Borrowed"},null);
         Set(dynamicRow,"IconSource",(Func<Texture>)(()=>{textureCalls++;return null;}));var portraitRows=Array.CreateInstance(rowType,1);portraitRows.SetValue(dynamicRow,0);
         var portraitList=(ClientPresentationList)Call(bridge,"List","portraits",portraitRows,"",null,true);
-        Program.Check(portraitList.Rows[0].IconSource!=null&&textureCalls==0,"Actual plugin adapter passes a passive texture source to public Host without resolving it");
+        Program.Check(portraitList.Rows[0].Image!=null&&textureCalls==0,"Actual plugin adapter passes a passive texture source to public Host without resolving it");
         object section=Call(bridge,"Section","draft","Draft","Projection only",bindings,new object[]{field},list,"Waiting","Pending",true,null);
         section=Call(bridge,"FieldColumns",section);
         Program.Check(((ClientPresentationSection)section).FieldColumns==2,"Adapter binds the same public responsive field-column hint");
@@ -269,18 +296,18 @@ internal static class CurrentProbe
         {private readonly Services s;private bool disposed;public Set(Services s,IClientContributedAction[] actions){this.s=s;Actions=actions;}public IReadOnlyList<IClientContributedAction> Actions {get;}public void Dispose(){if(!disposed){disposed=true;s.SetsDisposed++;}}}
         private sealed class ActionBinding : IClientContributedAction
         {private readonly ClientActionDefinition d;private readonly Func<bool> current;public ActionBinding(ClientActionDefinition d,Func<bool> current){this.d=d;this.current=current;}public string OwnerId=>"builtin.legacy-talent-trade";public string Id=>d.Id;public string Label=>d.Label;public string DisabledReason=>d.DisabledReason;public ClientActionExecutionResult TryExecute(){if(!current()||DisabledReason!=null)return new ClientActionExecutionResult(false,false,"stale");d.Execute();return new ClientActionExecutionResult(true,true,null);}}
-        public Color PrimaryText=>Color.white;public Color SecondaryText=>Color.white;public Color Background=>Color.clear;public Color Surface=>Color.clear;public Color Separator=>Color.clear;public Color HoverHighlight=>Color.clear;public Color Pending=>Color.white;public Color Error=>Color.white;public Color Success=>Color.white;public Color Warning=>Color.white;
-        public Color GetColor(string key)=>Color.white;public bool TryGetColor(string key,out Color c){c=Color.white;return true;}public float GetFloat(string key,float fallback=0)=>fallback;
-        public ClientThemeSnapshot Capture()=>new ClientThemeSnapshot(Version,new Dictionary<string,Color>(),new Dictionary<string,float>());
+        public ClientRgba PrimaryText=>new ClientRgba(1,1,1);public ClientRgba SecondaryText=>new ClientRgba(1,1,1);public ClientRgba Background=>new ClientRgba(0,0,0,0);public ClientRgba Surface=>new ClientRgba(0,0,0,0);public ClientRgba Separator=>new ClientRgba(0,0,0,0);public ClientRgba HoverHighlight=>new ClientRgba(0,0,0,0);public ClientRgba Pending=>new ClientRgba(1,1,1);public ClientRgba Error=>new ClientRgba(1,1,1);public ClientRgba Success=>new ClientRgba(1,1,1);public ClientRgba Warning=>new ClientRgba(1,1,1);
+        public ClientRgba GetColor(string key)=>new ClientRgba(1,1,1);public bool TryGetColor(string key,out ClientRgba c){c=new ClientRgba(1,1,1);return true;}public float GetFloat(string key,float fallback=0)=>fallback;
+        public ClientThemeSnapshot Capture()=>new ClientThemeSnapshot(Version,new Dictionary<string,ClientRgba>{{"probe.color",new ClientRgba(.2f,.3f,.4f,1)}},new Dictionary<string,float>());
     }
     private sealed class View : IClientPresentationSession
     {
         private readonly Services s;internal IClientActionSet Set;public ClientPresentationPage Page;public readonly Queue<ClientPresentationInput> Inputs=new Queue<ClientPresentationInput>();
         public View(Services s,string id){this.s=s;PageId=id;}public string OwnerId=>"builtin.legacy-talent-trade";public string PageId {get;}public bool IsClosed {get;private set;}public string FailureCode=>null;public ClientActionExecutionResult LastActionResult=>null;
         public void Publish(ClientPresentationPage page,IClientActionSet owned,Func<bool> current){if(PageId==s.FailPublishId)throw new InvalidOperationException("failed publish");Set?.Dispose();Set=owned;Page=page;}
-        public void Draw(Rect rect){}public float MeasureComposerHeight(float width)=>0;
+        public void Draw(ClientPresentationBounds rect){}public float MeasureComposerHeight(float width)=>0;
         public bool TryDequeueInput(out ClientPresentationInput input){input=Inputs.Count==0?null:Inputs.Dequeue();return input!=null;}
-        public string ComposerDraft=>"";public string ComposerControlName=>"";public bool ComposerFocused=>false;public void SetComposerDraft(string value){}public void RequestComposerFocus(){}public void InvokeAction(string id){}public List<Verse.FloatMenuOption> CreateActionMenuOptions()=>new List<Verse.FloatMenuOption>();public void ScrollToRow(string feed,string row){}public void ScrollToEnd(){}
+        public string ComposerDraft=>"";public string ComposerControlName=>"";public bool ComposerFocused=>false;public void SetComposerDraft(string value){}public void RequestComposerFocus(){}public void InvokeAction(string id){}public IReadOnlyList<ClientPresentationMenuItem> CreateActionMenuItems()=>new List<ClientPresentationMenuItem>();public void ScrollToRow(string feed,string row){}public void ScrollToEnd(){}
         public void Dispose(){if(IsClosed)return;IsClosed=true;Set?.Dispose();Set=null;}
     }
 }
