@@ -20,7 +20,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         internal void ViewUpdate()
         {
             if(presentationView==null)return;
-            while(presentationView.Input(out var input))
+            foreach(var input in presentationView.ReadInputBatch())
             {if(input.Id=="direct-users")selectedUser=input.Value;else if(input.Id=="direct-trades")selectedTrade=input.Value;presentationView.Invalidate();}
             var host=BuiltInLegacyTalentTradeClientExtension.Presentation;
             presentationView.Refresh(PresentationStamp,null,"direct-list",selectedTrade??selectedUser,null,()=>

@@ -26,9 +26,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         internal static TalentHostPresentation Presentation { get; private set; }
         private System.Timers.Timer driveTimer;
         private bool activated;
-        // 防重复入队：队列中已有待执行的 Update 时不再入队（Timer 200ms 远快于主线程消费，
-        // 若无此标志，主线程繁忙/卡顿时队列会积压到溢出）
-        private int updatePending;
+        private TalentUpdateDriver updateDriver;
 
         public override string ExtensionId => "builtin.legacy-talent-trade";
 
@@ -42,6 +40,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         public void Activate(ExtensionHostContext hostContext)
         {
             if (activated) return;
+            updateDriver = new TalentUpdateDriver(hostContext.GetRequiredService<IClientTaskService>().ForModule(this), TalentTradeManager.Update);
             TalentTradeLocalization.Bind(hostContext.GetRequiredService<IClientLocalizationService>().ForModule(this));
             TalentTradeTheme.Start(hostContext,this);
             Presentation = TalentPresentationAdapter.Create(hostContext,this);
@@ -78,28 +77,23 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         private void OnDriveTick(object sender, System.Timers.ElapsedEventArgs e)
         {
             if (!activated || !LegacyTalentTradeRuntime.IsActive) return;
-            if (Interlocked.CompareExchange(ref updatePending, 1, 0) != 0) return;
-            if (LegacyTalentTradeRuntime.Dispatcher == null)
-            {
-                Interlocked.Exchange(ref updatePending, 0);
-                return;
-            }
+            Volatile.Read(ref updateDriver)?.Tick();
+        }
 
-            LegacyTalentTradeRuntime.Dispatcher.Enqueue(() =>
+        private void StopDrive()
+        {
+            var driver=Interlocked.Exchange(ref updateDriver,null);
+            var timer=Interlocked.Exchange(ref driveTimer,null);
+            try
             {
-                try
-                {
-                    TalentTradeManager.Update();
-                }
-                finally
-                {
-                    Interlocked.Exchange(ref updatePending, 0);
-                }
-            });
+                if(timer!=null) {timer.Stop();timer.Elapsed-=OnDriveTick;timer.Dispose();}
+            }
+            finally {driver?.Dispose();}
         }
 
         public void Shutdown(ExtensionHostContext hostContext)
         {
+            StopDrive();
             TalentTradeTab.Instance.StopPresentation();
             TalentPawnIcons.Stop();
             settingsPanel?.StopPresentation();
@@ -109,14 +103,6 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             if (!activated) return;
             activated = false;
             LegacyTalentTradeRuntime.IsActive = false;
-
-            if (driveTimer != null)
-            {
-                driveTimer.Stop();
-                driveTimer.Elapsed -= OnDriveTick;
-                driveTimer.Dispose();
-                driveTimer = null;
-            }
 
             TalentTradeManager.Shutdown();
             TalentTradeTab.Instance.BindUserEvents(null);

@@ -47,7 +47,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
         // --- Blob assembly ---
         private static readonly object BlobLock = new object();
-        private static readonly Dictionary<string, string[]> PendingBlobs = new Dictionary<string, string[]>();
+        private static readonly TalentBlobBuffer PendingBlobs = new TalentBlobBuffer();
 
         // --- Def manifest exchange ---
         private static readonly object DefExchangeLock = new object();
@@ -1560,38 +1560,10 @@ namespace Phinix.LegacyTalentTradeExtension.Client
 
             lock (BlobLock)
             {
-                string[] blobParts;
-                if (!PendingBlobs.TryGetValue(blobId, out blobParts))
+                if (!PendingBlobs.TryAdd(blobId, partIndex, totalParts, partData, out string assembled)) return;
+                if (assembled != null)
                 {
-                    if (PendingBlobs.Count >= TalentTradeInputLimits.MaxPendingBlobs) return;
-                    blobParts = new string[totalParts];
-                    PendingBlobs[blobId] = blobParts;
-                }
-                if (blobParts.Length != totalParts || (blobParts[partIndex] != null && blobParts[partIndex] != partData)) return;
-                long size = blobParts.Sum(part => (long)(part == null ? 0 : part.Length));
-                long retained = PendingBlobs.Values.Sum(blob => blob.Sum(part => (long)(part == null ? 0 : part.Length)));
-                int added = blobParts[partIndex] == null ? partData.Length : 0;
-                if (size + added > TalentTradeInputLimits.MaxProtocolCharacters ||
-                    retained + added > TalentTradeInputLimits.MaxQueuedCharacters) return;
-                blobParts[partIndex] = partData;
-
-                // Check if complete
-                bool complete = true;
-                for (int i = 0; i < blobParts.Length; i++)
-                {
-                    if (blobParts[i] == null) { complete = false; break; }
-                }
-
-                if (complete)
-                {
-                    PendingBlobs.Remove(blobId);
-                    System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                    for (int i = 0; i < blobParts.Length; i++)
-                    {
-                        sb.Append(blobParts[i]);
-                    }
                     // Reassembled blob — process as a protocol message
-                    string assembled = sb.ToString();
                     int prefixAt = assembled.IndexOf(TalentTradeProtocol.Prefix + "|", StringComparison.Ordinal);
                     const string nestedBlobPrefix = "PHXTT|v1|blob|";
                     if (prefixAt >= 0 && assembled.Length - prefixAt >= nestedBlobPrefix.Length &&

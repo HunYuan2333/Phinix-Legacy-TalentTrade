@@ -34,7 +34,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             DirectTrade current=TalentTradeManager.GetTrade(trade.Id);
             if(current==null||current.State==DirectTradeState.Completed||current.State==DirectTradeState.Cancelled){Close();return;}
             trade=current;string initialStamp=ViewStamp();
-            while(modernView.Input(out var input))
+            foreach(var input in modernView.ReadInputBatch())
             {
                 if(input.Id=="silver")silverBuffer=input.Value;
                 else if(input.Id=="my-pawns"&&shownRowsStamp==initialStamp)selection=input.Value;

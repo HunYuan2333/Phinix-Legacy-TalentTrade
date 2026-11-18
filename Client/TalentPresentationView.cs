@@ -17,7 +17,15 @@ namespace Phinix.LegacyTalentTradeExtension.Client
         internal TalentPresentationView(TalentHostPresentation host,string id)
         {this.host=host;this.id=id;host.Sources.Add(id,context=>definitions);try{session=host.Open(id);}catch{host.Sources.Remove(id);throw;}}
         internal void Invalidate(){dirty=true;}
-        internal bool Input(out HostInput input)=>host.Input(session,out input);
+        // Complete the rendered input batch before callers change dirty/stamp/selection.
+        // Host still rejects inputs if the published context was already stale.
+        internal List<HostInput> ReadInputBatch()
+        {
+            var batch=new List<HostInput>();
+            while(host.Input(session,out var input))
+                if(input.Revision==revision)batch.Add(input);
+            return batch;
+        }
         internal bool IsClosed=>disposed||host.Closed(session);
         internal void Draw(Rect rect){if(!IsClosed)host.Draw(session,rect);}
         internal void Refresh(Func<string> stamp,string entity,string state,string selection,string silver,

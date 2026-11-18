@@ -48,7 +48,7 @@ namespace Phinix.LegacyTalentTradeExtension.Client
             if(!ReferenceEquals(game,Current.Game)||!ReferenceEquals(map,CurrentMap))
             {game=Current.Game;map=CurrentMap;pawn=null;selection=null;pawns.Clear();view.Invalidate();}
             RefreshFacts();
-            while(view.Input(out var input))
+            foreach(var input in view.ReadInputBatch())
             {
                 if(input.Id=="search")search=input.Value;
                 else if(input.Id=="price")price=input.Value;

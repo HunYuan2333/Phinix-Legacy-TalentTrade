@@ -21,6 +21,7 @@
     <Compile Include="DirectTradeWindowPresentation.cs" />
     <Compile Include="TalentTradeTheme.cs" />
     <Compile Include="BuiltInLegacyTalentTradeClientExtension.cs" />
+    <Compile Include="TalentUpdateDriver.cs" />
     <Compile Include="DefManifestHelper.cs" />
     <Compile Include="DirectTrade.cs" />
     <Compile Include="DirectTradePanel.cs" />
@@ -39,6 +40,7 @@
     <Compile Include="PendingPawnReturnLedger.cs" />
     <Compile Include="PendingPawnReturnAudit.cs" />
     <Compile Include="TalentTradeInputLimits.cs" />
+    <Compile Include="TalentBlobBuffer.cs" />
     <Compile Include="PendingMarketPurchase.cs" />
     <Compile Include="Properties/AssemblyInfo.cs" />
     <Compile Include="RentalContract.cs" />

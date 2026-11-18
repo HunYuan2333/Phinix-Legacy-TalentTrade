@@ -107,6 +107,12 @@ internal static class CurrentProbe
         int stamp=0; Func<string> snapshot=()=>stamp.ToString();
         Call(lifecycleView,"Refresh",snapshot,"trade","Pending",null,"0",Expression.Lambda(typeof(Func<>).MakeGenericType(factoryType.GetGenericArguments()[1]),Expression.Convert(Expression.Constant(actionArray),factoryType.GetGenericArguments()[1])).Compile(),sectionCallback,0);
         var oldPage=services.View.Page;
+        foreach(var text in new[]{"词","词语"})services.View.Inputs.Enqueue(new ClientPresentationInput(oldPage.Revision,"search",ClientPresentationInputKind.TextChanged,text));
+        var edits=(IList)Call(lifecycleView,"ReadInputBatch");
+        Call(lifecycleView,"Invalidate");string finalDraft="";foreach(var edit in edits)finalDraft=(string)Get(edit,"Value");
+        Program.Check(edits.Count==2&&finalDraft=="词语","Actual talent view drains the whole native word before owner invalidation");
+        services.View.Inputs.Enqueue(new ClientPresentationInput(oldPage.Revision,"search",ClientPresentationInputKind.TextChanged,"stale"));
+        Program.Check(((IList)Call(lifecycleView,"ReadInputBatch")).Count==0,"Talent batch does not bypass an already stale Host context");
         stamp++; var bound=services.View.Set.Actions[0]; int oldInvoked=invoked;
         bound.TryExecute();Program.Check(invoked==oldInvoked,"Changed projection guard rejects old owner intent");
         ((IDisposable)lifecycleView).Dispose();
@@ -302,11 +308,11 @@ internal static class CurrentProbe
     }
     private sealed class View : IClientPresentationSession
     {
-        private readonly Services s;internal IClientActionSet Set;public ClientPresentationPage Page;public readonly Queue<ClientPresentationInput> Inputs=new Queue<ClientPresentationInput>();
+        private readonly Services s;internal IClientActionSet Set;private Func<bool> current;public ClientPresentationPage Page;public readonly Queue<ClientPresentationInput> Inputs=new Queue<ClientPresentationInput>();
         public View(Services s,string id){this.s=s;PageId=id;}public string OwnerId=>"builtin.legacy-talent-trade";public string PageId {get;}public bool IsClosed {get;private set;}public string FailureCode=>null;public ClientActionExecutionResult LastActionResult=>null;
-        public void Publish(ClientPresentationPage page,IClientActionSet owned,Func<bool> current){if(PageId==s.FailPublishId)throw new InvalidOperationException("failed publish");Set?.Dispose();Set=owned;Page=page;}
+        public void Publish(ClientPresentationPage page,IClientActionSet owned,Func<bool> current){if(PageId==s.FailPublishId)throw new InvalidOperationException("failed publish");Set?.Dispose();Set=owned;Page=page;this.current=current;}
         public void Draw(ClientPresentationBounds rect){}public float MeasureComposerHeight(float width)=>0;
-        public bool TryDequeueInput(out ClientPresentationInput input){input=Inputs.Count==0?null:Inputs.Dequeue();return input!=null;}
+        public bool TryDequeueInput(out ClientPresentationInput input){if(IsClosed||current!=null&&!current()){Inputs.Clear();input=null;return false;}input=Inputs.Count==0?null:Inputs.Dequeue();return input!=null;}
         public string ComposerDraft=>"";public string ComposerControlName=>"";public bool ComposerFocused=>false;public void SetComposerDraft(string value){}public void RequestComposerFocus(){}public void InvokeAction(string id){}public IReadOnlyList<ClientPresentationMenuItem> CreateActionMenuItems()=>new List<ClientPresentationMenuItem>();public void ScrollToRow(string feed,string row){}public void ScrollToEnd(){}
         public void Dispose(){if(IsClosed)return;IsClosed=true;Set?.Dispose();Set=null;}
     }
